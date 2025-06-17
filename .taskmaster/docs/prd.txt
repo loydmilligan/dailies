@@ -1,0 +1,87 @@
+Product Requirements Document - Dailies Content Curation System
+
+EXECUTIVE SUMMARY
+Dailies is a personal content curation and knowledge management system designed to solve the problem of information overload and poor retention of digital content. The system focuses on capturing, processing, and synthesizing web content—particularly US politics and news—into digestible daily summaries that enhance learning and retention.
+
+PROBLEM STATEMENT
+Current Pain Points:
+1. Information Overload: Consuming 25-50 pieces of content daily without proper retention
+2. Passive Consumption: Reading/watching content immediately or bookmarking for later, but rarely revisiting
+3. Lost Knowledge: Valuable insights and information are quickly forgotten
+4. Fragmented Sources: Content comes from diverse platforms (YouTube, news sites, social media)
+5. No Synthesis: Individual pieces of content are consumed in isolation without connecting themes
+
+Target User: Tech-savvy knowledge workers and political enthusiasts who consume 25-50 digital content pieces daily and struggle with information retention.
+
+SOLUTION OVERVIEW
+A comprehensive system that:
+1. Captures content seamlessly through browser extension
+2. Processes content with AI to extract insights and metadata
+3. Categorizes content with special handling for US politics/news
+4. Synthesizes daily digests with topic clustering and importance ranking
+5. Delivers content through email and TTS for enhanced retention
+
+CORE FEATURES
+
+1. Content Capture
+- Browser extension (Chrome/Firefox) for one-click bookmarking
+- Captures entire web pages and full YouTube videos including transcripts
+- Automatic metadata extraction (title, URL, timestamp, source domain)
+- Visual confirmation and no browsing interruption
+
+2. Content Classification
+- AI-powered classification of "US Politics/News" vs "General" content
+- 90%+ accuracy with confidence scoring
+- Manual override capability for incorrect classifications
+- Fallback to manual tagging when AI fails
+
+3. Enhanced Political Content Processing
+- Political bias detection (left/center/right leaning)
+- Content quality scoring (1-10 scale) based on multiple factors
+- Loaded language identification and source credibility assessment
+- Comprehensive summaries with executive summary, detailed summary, and key points
+- Implications analysis for forward-looking insights
+
+4. Basic General Content Storage
+- Simple JSON structure for non-political content
+- Minimal processing to reduce system load
+- Basic metadata preservation for search capability
+
+5. Daily Digest Generation
+- Content grouped by semantic similarity into topic clusters
+- Topics ranked by importance score (quality × freshness × engagement)
+- Maximum 3-5 topic clusters per digest with diversity filtering
+- Markdown format for clean, readable presentation
+
+6. Multi-Format Delivery
+- Email delivery at user-configured time with mobile-responsive design
+- TTS audio generation with natural voice synthesis and chapter markers
+- Archive links to web versions for historical access
+
+7. System Management
+- Web interface dashboard with recent captures and statistics
+- Search, filter, and bulk operations functionality
+- Manual content editing and tag management
+- Configuration settings for digest preferences and AI models
+
+TECHNICAL REQUIREMENTS
+
+Database: PostgreSQL with content_items, political_analysis, and daily_digests tables
+AI Integration: Gemini API (primary) with OpenAI/Anthropic fallback
+Infrastructure: Self-hosted on home server with encrypted storage
+Browser Support: Chrome and Firefox extensions with Manifest V3
+Performance: <5s capture, <30s AI processing, <5min digest generation
+Scalability: 100+ captures/day, 2+ years retention, 5+ concurrent processing
+
+SUCCESS METRICS
+- Daily content capture rate: 25-50 items
+- Digest open rate: 90%+
+- Content classification accuracy: 90%+
+- System uptime: 99.5%+
+- User satisfaction with digest quality and knowledge retention
+
+FUTURE ENHANCEMENTS
+Phase 2: Flashcard generation and spaced repetition system
+Phase 3: Browsing assistant with AI recommendations
+Phase 4: Obsidian integration and plugin system
+Phase 5: Multi-category support and advanced bias detection

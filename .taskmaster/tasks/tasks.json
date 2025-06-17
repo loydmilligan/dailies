@@ -1,0 +1,1386 @@
+{
+  "master": {
+    "tasks": [
+      {
+        "id": 1,
+        "title": "Setup Project Repository and Infrastructure",
+        "description": "Initialize the project repository with proper structure and setup the self-hosted infrastructure on home server with encrypted storage.",
+        "details": "1. Create a Git repository with branches for development, staging, and production\n2. Set up Docker containers for PostgreSQL, web server, and processing services\n3. Configure encrypted storage using LUKS or VeraCrypt for content storage\n4. Implement backup solution with automated daily backups\n5. Configure networking with proper security (firewall rules, HTTPS)\n6. Setup monitoring with Prometheus and Grafana for system health\n7. Use Docker Compose for orchestration with the following services:\n   - PostgreSQL 15+\n   - Node.js 20+ for backend\n   - Nginx for reverse proxy\n   - Redis for caching\n8. Implement proper logging with ELK stack or Loki\n\nTechnology stack:\n- Docker 24.0+\n- Docker Compose 2.20+\n- PostgreSQL 15+\n- Node.js 20+ with Express 4.18+\n- Nginx 1.24+\n- Redis 7.0+",
+        "testStrategy": "1. Verify all containers start and communicate properly\n2. Test backup and restore functionality\n3. Verify encrypted storage is properly mounted and accessible\n4. Perform load testing to ensure system can handle 100+ captures/day\n5. Verify monitoring alerts work properly\n6. Test system recovery after simulated failures",
+        "priority": "high",
+        "dependencies": [],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Initialize Git Repository with Branch Structure",
+            "description": "Create a new Git repository for the project and establish branches for development, staging, and production environments.",
+            "dependencies": [],
+            "details": "Set up the repository on a chosen platform (e.g., GitHub, GitLab). Create and protect branches for development, staging, and production. Establish branch protection rules and access controls as needed.",
+            "status": "pending",
+            "testStrategy": "Verify that all branches exist, branch protection rules are enforced, and test pushing and merging workflows."
+          },
+          {
+            "id": 2,
+            "title": "Configure Docker Compose Environment",
+            "description": "Set up Docker Compose to orchestrate PostgreSQL, Node.js backend, Nginx reverse proxy, and Redis caching services.",
+            "dependencies": [
+              1
+            ],
+            "details": "Write Dockerfiles for each service as needed. Create a docker-compose.yml file defining services for PostgreSQL 15+, Node.js 20+ with Express, Nginx 1.24+, and Redis 7.0+. Ensure proper networking and volume mounts for persistent data.",
+            "status": "pending",
+            "testStrategy": "Run 'docker compose up' and verify all containers start, can communicate, and are accessible as intended."
+          },
+          {
+            "id": 3,
+            "title": "Implement Encrypted Storage and Automated Backups",
+            "description": "Configure encrypted storage using LUKS or VeraCrypt for content storage and set up an automated daily backup solution.",
+            "dependencies": [
+              2
+            ],
+            "details": "Partition and encrypt storage volumes for sensitive data. Integrate backup scripts or tools to perform daily backups of databases and content, storing them securely.",
+            "status": "pending",
+            "testStrategy": "Test mounting and unmounting encrypted volumes, and verify that backup jobs run automatically and backups can be restored."
+          },
+          {
+            "id": 4,
+            "title": "Set Up Secure Networking and HTTPS",
+            "description": "Configure firewall rules, secure networking, and HTTPS termination for all exposed services.",
+            "dependencies": [
+              2
+            ],
+            "details": "Set up firewall rules to restrict access to only necessary ports. Configure Nginx as a reverse proxy with HTTPS using Let's Encrypt or self-signed certificates. Ensure all internal and external traffic is properly secured.",
+            "status": "pending",
+            "testStrategy": "Perform port scans to verify only intended ports are open. Test HTTPS endpoints for valid certificates and secure connections."
+          },
+          {
+            "id": 5,
+            "title": "Deploy Monitoring and Logging Infrastructure",
+            "description": "Install and configure Prometheus and Grafana for system health monitoring, and set up centralized logging with ELK stack or Loki.",
+            "dependencies": [
+              2
+            ],
+            "details": "Deploy Prometheus and Grafana containers for metrics collection and visualization. Set up ELK stack or Loki for aggregating and querying logs from all services. Integrate alerting as needed.",
+            "status": "pending",
+            "testStrategy": "Verify that metrics and logs are collected from all services, dashboards are accessible, and alerts are triggered on test events."
+          }
+        ]
+      },
+      {
+        "id": 2,
+        "title": "Database Schema Design and Implementation",
+        "description": "Design and implement the PostgreSQL database schema with content_items, political_analysis, and daily_digests tables as specified in the PRD.",
+        "details": "Create the following tables in PostgreSQL:\n\n1. content_items:\n```sql\nCREATE TABLE content_items (\n  id SERIAL PRIMARY KEY,\n  url TEXT NOT NULL,\n  title TEXT NOT NULL,\n  source_domain TEXT NOT NULL,\n  content_type TEXT NOT NULL, -- 'article', 'video', etc.\n  full_content TEXT NOT NULL,\n  capture_timestamp TIMESTAMP NOT NULL DEFAULT NOW(),\n  is_political BOOLEAN,\n  ai_confidence_score FLOAT,\n  manual_override BOOLEAN DEFAULT FALSE,\n  processed BOOLEAN DEFAULT FALSE\n);\n```\n\n2. political_analysis:\n```sql\nCREATE TABLE political_analysis (\n  id SERIAL PRIMARY KEY,\n  content_id INTEGER REFERENCES content_items(id) ON DELETE CASCADE,\n  bias_score FLOAT, -- -1.0 (left) to 1.0 (right)\n  quality_score INTEGER, -- 1-10 scale\n  loaded_language_score FLOAT, -- 0.0-1.0 scale\n  source_credibility_score FLOAT, -- 0.0-1.0 scale\n  executive_summary TEXT,\n  detailed_summary TEXT,\n  key_points JSONB,\n  implications JSONB\n);\n```\n\n3. daily_digests:\n```sql\nCREATE TABLE daily_digests (\n  id SERIAL PRIMARY KEY,\n  date DATE NOT NULL UNIQUE,\n  topic_clusters JSONB NOT NULL,\n  markdown_content TEXT NOT NULL,\n  audio_url TEXT,\n  generated_timestamp TIMESTAMP NOT NULL DEFAULT NOW()\n);\n```\n\n4. Create necessary indexes:\n```sql\nCREATE INDEX idx_content_items_capture_date ON content_items(DATE(capture_timestamp));\nCREATE INDEX idx_content_items_is_political ON content_items(is_political);\nCREATE INDEX idx_content_items_source_domain ON content_items(source_domain);\n```\n\nImplement using Prisma ORM 5.0+ or TypeORM 0.3+ for database interactions.",
+        "testStrategy": "1. Write unit tests for database schema validation\n2. Test data insertion, retrieval, update, and deletion operations\n3. Verify foreign key constraints work properly\n4. Test database performance with large datasets (10,000+ records)\n5. Verify indexes improve query performance\n6. Test database backup and restore functionality",
+        "priority": "high",
+        "dependencies": [
+          1
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Review and Finalize Table Schemas",
+            "description": "Analyze the provided table definitions for content_items, political_analysis, and daily_digests to ensure they meet the PRD requirements and follow PostgreSQL best practices, including normalization, primary keys, and foreign key relationships.",
+            "dependencies": [],
+            "details": "Check for appropriate data types, constraints, normalization (aiming for at least 3NF), and referential integrity. Adjust schemas if necessary to optimize for maintainability and performance.",
+            "status": "pending",
+            "testStrategy": "Peer review the schema definitions and validate against the PRD. Use schema linting tools to check for common design issues."
+          },
+          {
+            "id": 2,
+            "title": "Implement Table Creation in PostgreSQL",
+            "description": "Write and execute SQL scripts to create the content_items, political_analysis, and daily_digests tables in the PostgreSQL database as finalized in the previous step.",
+            "dependencies": [
+              1
+            ],
+            "details": "Ensure all constraints, default values, and foreign key relationships are correctly implemented. Use transaction blocks to ensure atomicity.",
+            "status": "pending",
+            "testStrategy": "Run the scripts in a test database and verify that all tables are created with the correct structure using PostgreSQL metadata queries."
+          },
+          {
+            "id": 3,
+            "title": "Create Required Indexes",
+            "description": "Define and create the necessary indexes on the content_items table to optimize query performance, as specified (capture_timestamp, is_political, source_domain).",
+            "dependencies": [
+              2
+            ],
+            "details": "Implement the provided CREATE INDEX statements and consider any additional indexes based on expected query patterns.",
+            "status": "pending",
+            "testStrategy": "Use EXPLAIN ANALYZE on sample queries to confirm that indexes are being utilized and improve performance."
+          },
+          {
+            "id": 4,
+            "title": "Integrate Schema with ORM (Prisma or TypeORM)",
+            "description": "Map the PostgreSQL schema to the chosen ORM (Prisma ORM 5.0+ or TypeORM 0.3+) by defining models/entities and configuring relationships and constraints.",
+            "dependencies": [
+              2
+            ],
+            "details": "Generate ORM models that accurately reflect the database schema, including field types, primary and foreign keys, and default values.",
+            "status": "pending",
+            "testStrategy": "Synchronize the ORM with the database and run automated tests to ensure models match the actual schema and support CRUD operations."
+          },
+          {
+            "id": 5,
+            "title": "Validate and Document the Schema Implementation",
+            "description": "Test the full schema implementation for correctness, performance, and compliance with the PRD. Document the schema structure, relationships, and any design decisions.",
+            "dependencies": [
+              3,
+              4
+            ],
+            "details": "Perform integration tests, check for referential integrity, and document the schema using diagrams and written explanations for future maintainability.",
+            "status": "pending",
+            "testStrategy": "Run end-to-end tests, validate data integrity, and review documentation with stakeholders for completeness and clarity."
+          }
+        ]
+      },
+      {
+        "id": 3,
+        "title": "Chrome Browser Extension Development",
+        "description": "Develop a Chrome browser extension with Manifest V3 that allows one-click bookmarking of web content with visual confirmation and no browsing interruption.",
+        "details": "1. Create a Chrome extension using Manifest V3 with the following features:\n   - Browser action button for one-click capture\n   - Context menu option for capturing selected text\n   - Background service worker for processing captures\n   - Options page for configuration\n\n2. Implement content capture functionality:\n   - Extract full HTML content using document.documentElement.outerHTML\n   - For YouTube videos, extract video ID and use YouTube API to fetch transcript\n   - Extract metadata (title, URL, timestamp, source domain)\n\n3. Create a minimal UI for visual confirmation (toast notification)\n\n4. Implement secure communication with backend API:\n   - Use fetch API with proper error handling\n   - Implement retry mechanism for failed requests\n   - Use proper authentication (JWT tokens)\n\n5. Handle different content types (articles, videos, social media posts)\n\nTechnologies:\n- Chrome Extension Manifest V3\n- JavaScript ES2022+\n- YouTube API v3 for transcript extraction\n- Readability.js for content extraction\n- JWT for authentication",
+        "testStrategy": "1. Test extension on various websites (news sites, YouTube, social media)\n2. Verify content extraction accuracy\n3. Test error handling and retry mechanisms\n4. Verify visual confirmation works properly\n5. Test performance impact on browser\n6. Verify extension works in incognito mode\n7. Test with various network conditions (slow, offline, etc.)",
+        "priority": "high",
+        "dependencies": [
+          2
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Set Up Chrome Extension Project Structure with Manifest V3",
+            "description": "Initialize the Chrome extension project, create the manifest.json file compliant with Manifest V3, and set up the required directories and files for background service worker, popup, options page, and content scripts.",
+            "dependencies": [],
+            "details": "Ensure manifest.json includes permissions for tabs, scripting, storage, and host permissions for content capture. Set up the service worker, popup UI, and options page scaffolding.",
+            "status": "pending",
+            "testStrategy": "Load the unpacked extension in Chrome and verify that the extension installs without errors and all components (browser action, options page) are accessible."
+          },
+          {
+            "id": 2,
+            "title": "Implement Content Capture and Extraction Logic",
+            "description": "Develop functionality to capture web content, including full HTML, selected text, metadata, and specialized extraction for YouTube videos using the YouTube API and Readability.js.",
+            "dependencies": [
+              1
+            ],
+            "details": "Use content scripts to extract document.documentElement.outerHTML, page metadata, and selected text. For YouTube, extract video ID and fetch transcript via YouTube API. Integrate Readability.js for article parsing.",
+            "status": "pending",
+            "testStrategy": "Test content capture on various web pages, including articles, YouTube videos, and social media posts. Validate extracted data structure and completeness."
+          },
+          {
+            "id": 3,
+            "title": "Design and Implement Minimal UI for Visual Confirmation",
+            "description": "Create a non-intrusive UI element (toast notification) that visually confirms successful bookmarking or capture without interrupting browsing.",
+            "dependencies": [
+              2
+            ],
+            "details": "Develop a toast notification component injected into the page DOM upon successful capture. Ensure it auto-dismisses and does not interfere with page interaction.",
+            "status": "pending",
+            "testStrategy": "Trigger captures and verify that the toast notification appears, displays correct information, and disappears as expected across different sites."
+          },
+          {
+            "id": 4,
+            "title": "Integrate Secure Backend Communication",
+            "description": "Implement secure communication with the backend API using fetch, including JWT authentication, error handling, and a retry mechanism for failed requests.",
+            "dependencies": [
+              2
+            ],
+            "details": "Store and use JWT tokens securely. Handle API errors gracefully and implement exponential backoff for retries. Ensure all sensitive data is transmitted securely.",
+            "status": "pending",
+            "testStrategy": "Simulate network failures and invalid tokens to verify error handling and retry logic. Confirm successful data transmission and authentication with the backend."
+          },
+          {
+            "id": 5,
+            "title": "Support Multiple Content Types and Context Menu Integration",
+            "description": "Extend the extension to handle different content types (articles, videos, social media posts) and add a context menu option for capturing selected text.",
+            "dependencies": [
+              2
+            ],
+            "details": "Implement logic to detect and process various content types. Add a context menu item that triggers capture of selected text and integrates with the main capture workflow.",
+            "status": "pending",
+            "testStrategy": "Test the extension on diverse content types and verify context menu functionality. Ensure correct handling and extraction for each supported type."
+          }
+        ]
+      },
+      {
+        "id": 4,
+        "title": "Firefox Browser Extension Development",
+        "description": "Develop a Firefox browser extension with Manifest V3 that allows one-click bookmarking of web content with visual confirmation and no browsing interruption.",
+        "details": "1. Create a Firefox extension using Manifest V3 with the following features:\n   - Browser action button for one-click capture\n   - Context menu option for capturing selected text\n   - Background script for processing captures\n   - Options page for configuration\n\n2. Implement content capture functionality:\n   - Extract full HTML content using document.documentElement.outerHTML\n   - For YouTube videos, extract video ID and use YouTube API to fetch transcript\n   - Extract metadata (title, URL, timestamp, source domain)\n\n3. Create a minimal UI for visual confirmation (toast notification)\n\n4. Implement secure communication with backend API:\n   - Use fetch API with proper error handling\n   - Implement retry mechanism for failed requests\n   - Use proper authentication (JWT tokens)\n\n5. Handle different content types (articles, videos, social media posts)\n\n6. Address Firefox-specific differences from Chrome implementation\n\nTechnologies:\n- Firefox Extension Manifest V3\n- JavaScript ES2022+\n- YouTube API v3 for transcript extraction\n- Readability.js for content extraction\n- JWT for authentication",
+        "testStrategy": "1. Test extension on various websites (news sites, YouTube, social media)\n2. Verify content extraction accuracy\n3. Test error handling and retry mechanisms\n4. Verify visual confirmation works properly\n5. Test performance impact on browser\n6. Verify extension works in private browsing mode\n7. Test with various network conditions (slow, offline, etc.)",
+        "priority": "high",
+        "dependencies": [
+          2
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Set Up Firefox Extension Project with Manifest V3",
+            "description": "Initialize the Firefox extension project structure using Manifest V3, ensuring compatibility with Firefox-specific requirements and differences from Chrome.",
+            "dependencies": [],
+            "details": "Create the manifest.json file with appropriate permissions, background scripts, browser action, and context menu definitions. Address Firefox-specific Manifest V3 nuances, such as host permissions and web accessible resources.",
+            "status": "pending",
+            "testStrategy": "Verify extension loads in Firefox, manifest is valid, and browser action/context menu appear as expected."
+          },
+          {
+            "id": 2,
+            "title": "Implement Content Capture Functionality",
+            "description": "Develop scripts to capture full HTML, selected text, and metadata from web pages, including special handling for YouTube videos and social media posts.",
+            "dependencies": [
+              1
+            ],
+            "details": "Use content scripts to extract document HTML, metadata (title, URL, timestamp, domain), and for YouTube, extract video ID and fetch transcript via YouTube API. Integrate Readability.js for article extraction.",
+            "status": "pending",
+            "testStrategy": "Test capture on various content types (articles, videos, social media), validate extracted data structure and accuracy."
+          },
+          {
+            "id": 3,
+            "title": "Design and Implement Minimal UI for Visual Confirmation",
+            "description": "Create a non-intrusive UI element (e.g., toast notification) to visually confirm successful bookmarking without interrupting browsing.",
+            "dependencies": [
+              2
+            ],
+            "details": "Develop a lightweight notification system triggered after content capture, ensuring it overlays correctly and disappears automatically.",
+            "status": "pending",
+            "testStrategy": "Trigger captures and confirm the toast appears, displays correct information, and auto-dismisses without blocking user interaction."
+          },
+          {
+            "id": 4,
+            "title": "Integrate Secure Backend Communication",
+            "description": "Implement secure API communication using fetch, JWT authentication, error handling, and retry logic for failed requests.",
+            "dependencies": [
+              2
+            ],
+            "details": "Send captured content to backend API with JWT tokens, handle errors gracefully, and implement retry mechanism for transient failures.",
+            "status": "pending",
+            "testStrategy": "Simulate network/API failures, verify retries and error handling, and confirm successful authenticated requests."
+          },
+          {
+            "id": 5,
+            "title": "Develop Options Page and Configuration Management",
+            "description": "Build an options page for user configuration and manage extension settings, ensuring persistent storage and proper permissions.",
+            "dependencies": [
+              1
+            ],
+            "details": "Allow users to configure backend API endpoints, authentication tokens, and UI preferences. Store settings using Firefox extension storage APIs.",
+            "status": "pending",
+            "testStrategy": "Change settings via options page, reload extension, and verify persistence and correct application of user preferences."
+          }
+        ]
+      },
+      {
+        "id": 5,
+        "title": "Backend API Development",
+        "description": "Develop the backend API to handle content capture, processing, and retrieval with proper authentication and rate limiting.",
+        "details": "1. Create a RESTful API using Express.js with the following endpoints:\n   - POST /api/content - Capture new content\n   - GET /api/content - Retrieve content list with filtering\n   - GET /api/content/:id - Retrieve specific content\n   - PUT /api/content/:id - Update content (manual override)\n   - GET /api/digests - Retrieve digest list\n   - GET /api/digests/:date - Retrieve specific digest\n\n2. Implement authentication using JWT tokens\n\n3. Implement rate limiting to prevent abuse\n\n4. Create middleware for request validation, error handling, and logging\n\n5. Implement proper error handling and status codes\n\n6. Set up Swagger/OpenAPI documentation\n\n7. Implement content sanitization for security\n\nTechnologies:\n- Node.js 20+\n- Express 4.18+\n- Prisma ORM 5.0+ or TypeORM 0.3+\n- JWT for authentication\n- express-rate-limit for rate limiting\n- Joi or Zod for validation\n- Swagger/OpenAPI for documentation\n- Winston for logging",
+        "testStrategy": "1. Write unit tests for all API endpoints\n2. Test authentication and authorization\n3. Test rate limiting functionality\n4. Verify error handling works properly\n5. Test with various input data (valid, invalid, edge cases)\n6. Perform load testing to ensure API can handle multiple concurrent requests\n7. Test API documentation accuracy",
+        "priority": "high",
+        "dependencies": [
+          2
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Set Up Express.js Project and Define API Endpoints",
+            "description": "Initialize a Node.js project, install Express, and define all required RESTful API endpoints for content and digest management.",
+            "dependencies": [],
+            "details": "Set up the project directory, initialize with npm, install Express, and create the main server file. Implement the following endpoints: POST /api/content, GET /api/content, GET /api/content/:id, PUT /api/content/:id, GET /api/digests, GET /api/digests/:date.",
+            "status": "pending",
+            "testStrategy": "Verify that each endpoint responds with the correct status code and structure using Postman or curl."
+          },
+          {
+            "id": 2,
+            "title": "Implement Authentication and Rate Limiting",
+            "description": "Add JWT-based authentication and configure express-rate-limit middleware to protect API endpoints from abuse.",
+            "dependencies": [
+              1
+            ],
+            "details": "Integrate JWT for user authentication and authorization. Apply express-rate-limit to sensitive endpoints to prevent excessive requests.",
+            "status": "pending",
+            "testStrategy": "Test endpoints with and without valid JWTs and simulate rapid requests to ensure rate limiting is enforced."
+          },
+          {
+            "id": 3,
+            "title": "Add Middleware for Validation, Logging, and Error Handling",
+            "description": "Create and integrate middleware for request validation (using Joi or Zod), structured logging (using Winston), and centralized error handling.",
+            "dependencies": [
+              2
+            ],
+            "details": "Implement validation schemas for incoming requests, set up Winston for logging requests and errors, and ensure all errors are handled with appropriate status codes and messages.",
+            "status": "pending",
+            "testStrategy": "Send invalid requests to verify validation and error responses; check logs for correct entries."
+          },
+          {
+            "id": 4,
+            "title": "Implement Content Processing and Security Measures",
+            "description": "Develop logic for content capture, processing, retrieval, and sanitization to ensure data integrity and security.",
+            "dependencies": [
+              3
+            ],
+            "details": "Use Prisma ORM or TypeORM for database operations. Sanitize all user input to prevent XSS and injection attacks. Ensure content is processed and stored securely.",
+            "status": "pending",
+            "testStrategy": "Test with various content payloads, including malicious input, to confirm sanitization and correct database operations."
+          },
+          {
+            "id": 5,
+            "title": "Document API with Swagger/OpenAPI",
+            "description": "Set up Swagger/OpenAPI documentation for all endpoints, request/response schemas, and authentication requirements.",
+            "dependencies": [
+              4
+            ],
+            "details": "Integrate Swagger UI into the project and document each endpoint, including parameters, responses, and security schemes.",
+            "status": "pending",
+            "testStrategy": "Access the Swagger UI and verify that all endpoints are documented and interactive for testing."
+          }
+        ]
+      },
+      {
+        "id": 6,
+        "title": "AI Integration for Content Classification",
+        "description": "Implement AI-powered classification of content into 'US Politics/News' vs 'General' categories with 90%+ accuracy and confidence scoring.",
+        "details": "1. Integrate with Gemini API (primary) with OpenAI/Anthropic fallback:\n   - Set up API clients for Gemini API (Google AI Studio)\n   - Set up OpenAI API client as fallback\n   - Set up Anthropic API client as secondary fallback\n\n2. Implement content classification logic:\n   - Extract relevant text from content (title, main content)\n   - Construct prompt for classification\n   - Process response and extract classification\n   - Calculate confidence score based on model output\n\n3. Implement fallback mechanism:\n   - If primary API fails or returns low confidence, try fallback APIs\n   - If all APIs fail, mark for manual classification\n\n4. Create a classification service with the following methods:\n   - classifyContent(contentId): Promise<ClassificationResult>\n   - getConfidenceScore(modelOutput): number\n\n5. Implement caching to avoid redundant API calls\n\nTechnologies:\n- Gemini API (Google AI Studio)\n- OpenAI API (gpt-4-turbo or newer)\n- Anthropic API (Claude 3 Opus or newer)\n- Redis for caching\n- Proper error handling and retry logic",
+        "testStrategy": "1. Test classification accuracy on a diverse set of content\n2. Verify confidence scoring correlates with accuracy\n3. Test fallback mechanism by simulating primary API failures\n4. Measure performance and latency\n5. Test with edge cases (very short content, mixed content, etc.)\n6. Verify caching improves performance\n7. Compare results across different AI models",
+        "priority": "high",
+        "dependencies": [
+          5
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Set Up and Configure API Clients",
+            "description": "Establish and configure API clients for Gemini (primary), OpenAI (fallback), and Anthropic (secondary fallback) to enable content classification requests.",
+            "dependencies": [],
+            "details": "Implement authentication, environment variable management for API keys, and ensure connectivity for all three providers. Validate that each client can send and receive test requests.",
+            "status": "pending",
+            "testStrategy": "Verify successful connection and response from each API using sample prompts. Confirm error handling for invalid credentials."
+          },
+          {
+            "id": 2,
+            "title": "Develop Content Extraction and Prompt Construction Logic",
+            "description": "Implement logic to extract relevant text (title and main content) from input and construct standardized prompts for classification.",
+            "dependencies": [
+              1
+            ],
+            "details": "Design a function to parse incoming content objects, extract necessary fields, and format prompts compatible with each API's requirements.",
+            "status": "pending",
+            "testStrategy": "Test extraction and prompt formatting with diverse content samples, ensuring correct and consistent prompt structure."
+          },
+          {
+            "id": 3,
+            "title": "Implement Classification and Confidence Scoring",
+            "description": "Process API responses to determine content category ('US Politics/News' vs 'General') and calculate a confidence score based on model output.",
+            "dependencies": [
+              2
+            ],
+            "details": "Parse model responses, extract classification labels, and compute confidence scores using model-provided probabilities or custom logic.",
+            "status": "pending",
+            "testStrategy": "Validate correct parsing and scoring with mock and real API responses, ensuring accuracy and reliability."
+          },
+          {
+            "id": 4,
+            "title": "Design and Integrate Fallback and Manual Review Mechanism",
+            "description": "Implement logic to trigger fallback APIs if the primary fails or returns low confidence, and flag content for manual review if all fail.",
+            "dependencies": [
+              3
+            ],
+            "details": "Create a robust fallback sequence and error handling to ensure classification attempts all available APIs before manual intervention.",
+            "status": "pending",
+            "testStrategy": "Simulate API failures and low-confidence scenarios to confirm correct fallback and manual review triggers."
+          },
+          {
+            "id": 5,
+            "title": "Implement Caching and Optimize Redundant Call Prevention",
+            "description": "Integrate Redis caching to store classification results and prevent redundant API calls for the same content.",
+            "dependencies": [
+              4
+            ],
+            "details": "Design cache keys, set appropriate expiration policies, and ensure cache is checked before making classification requests.",
+            "status": "pending",
+            "testStrategy": "Test cache hits and misses, validate cache invalidation, and measure reduction in redundant API calls."
+          }
+        ]
+      },
+      {
+        "id": 7,
+        "title": "Political Content Analysis Implementation",
+        "description": "Implement enhanced processing for political content including bias detection, quality scoring, loaded language identification, and comprehensive summaries.",
+        "details": "1. Implement political content analysis pipeline:\n   - Bias detection (left/center/right leaning)\n   - Content quality scoring (1-10 scale)\n   - Loaded language identification\n   - Source credibility assessment\n\n2. Implement comprehensive summary generation:\n   - Executive summary (1-2 paragraphs)\n   - Detailed summary (3-5 paragraphs)\n   - Key points extraction (5-10 bullet points)\n   - Implications analysis\n\n3. Create a scoring system based on multiple factors:\n   - Source reputation database (pre-populated with known sources)\n   - Linguistic analysis for loaded language\n   - Fact density and citation analysis\n   - Writing style and complexity metrics\n\n4. Implement a PoliticalContentAnalyzer class with methods:\n   - analyzeBias(content): BiasResult\n   - scoreQuality(content): QualityScore\n   - detectLoadedLanguage(content): LoadedLanguageResult\n   - assessSourceCredibility(domain): CredibilityScore\n   - generateSummaries(content): SummaryResult\n\nTechnologies:\n- Gemini API for advanced analysis\n- NLP libraries (natural, compromise, or spaCy)\n- Pre-trained bias detection models\n- Source credibility database (updated regularly)",
+        "testStrategy": "1. Test bias detection on known left/center/right content\n2. Verify quality scoring correlates with expert assessments\n3. Test loaded language detection with various examples\n4. Verify source credibility assessment against known sources\n5. Test summary generation for accuracy and completeness\n6. Perform user testing to validate usefulness of analysis\n7. Compare results with human expert analysis",
+        "priority": "medium",
+        "dependencies": [
+          6
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Design Political Content Analysis Pipeline",
+            "description": "Architect the end-to-end pipeline for processing political content, including modules for bias detection, quality scoring, loaded language identification, and source credibility assessment.",
+            "dependencies": [],
+            "details": "Define the data flow, interfaces, and integration points for each analysis component. Specify input/output formats and ensure compatibility with NLP libraries and external APIs.",
+            "status": "pending",
+            "testStrategy": "Review pipeline architecture with stakeholders and validate module integration using sample political content."
+          },
+          {
+            "id": 2,
+            "title": "Develop and Integrate Bias Detection and Quality Scoring Modules",
+            "description": "Implement modules for detecting political bias (left/center/right) and scoring content quality on a 1-10 scale using pre-trained models and linguistic analysis.",
+            "dependencies": [
+              1
+            ],
+            "details": "Leverage pre-trained bias detection models and NLP techniques to classify content bias. Develop a scoring algorithm that evaluates writing quality, fact density, and citation analysis.",
+            "status": "pending",
+            "testStrategy": "Test modules on a labeled dataset of political articles and compare results to human annotations."
+          },
+          {
+            "id": 3,
+            "title": "Implement Loaded Language and Source Credibility Assessment",
+            "description": "Create components to identify loaded language and assess the credibility of content sources using a reputation database.",
+            "dependencies": [
+              1
+            ],
+            "details": "Use linguistic analysis to flag emotionally charged or biased terms. Integrate a regularly updated source credibility database to score domains.",
+            "status": "pending",
+            "testStrategy": "Validate loaded language detection against benchmark datasets and verify source credibility scores with known reputable and non-reputable sources."
+          },
+          {
+            "id": 4,
+            "title": "Develop Comprehensive Summary Generation System",
+            "description": "Build a system to generate executive summaries, detailed summaries, key point extractions, and implications analyses for political content.",
+            "dependencies": [
+              2,
+              3
+            ],
+            "details": "Utilize advanced NLP models (e.g., Gemini API) to produce multi-level summaries and extract key points. Ensure summaries reflect detected bias, quality, and credibility findings.",
+            "status": "pending",
+            "testStrategy": "Evaluate summary outputs for accuracy, coverage, and readability using a set of diverse political articles."
+          },
+          {
+            "id": 5,
+            "title": "Implement PoliticalContentAnalyzer Class and API",
+            "description": "Develop the main class with methods for bias analysis, quality scoring, loaded language detection, source credibility assessment, and summary generation.",
+            "dependencies": [
+              2,
+              3,
+              4
+            ],
+            "details": "Expose a unified interface for all analysis functions, ensuring modularity and scalability. Document API methods and expected outputs.",
+            "status": "pending",
+            "testStrategy": "Perform end-to-end tests using real-world political content and validate outputs for each method against expected results."
+          }
+        ]
+      },
+      {
+        "id": 8,
+        "title": "General Content Storage Implementation",
+        "description": "Implement simple JSON structure for non-political content with minimal processing to reduce system load while preserving basic metadata for search capability.",
+        "details": "1. Design a lightweight JSON structure for general content:\n```json\n{\n  \"id\": \"uuid\",\n  \"url\": \"https://example.com/article\",\n  \"title\": \"Article Title\",\n  \"sourceDomain\": \"example.com\",\n  \"contentType\": \"article\",\n  \"captureTimestamp\": \"2023-07-13T12:00:00Z\",\n  \"summary\": \"Brief auto-generated summary\",\n  \"keywords\": [\"keyword1\", \"keyword2\"],\n  \"readingTime\": 5,\n  \"contentHash\": \"sha256-hash\"\n}\n```\n\n2. Implement minimal processing pipeline:\n   - Extract basic metadata (title, URL, source domain)\n   - Generate simple summary (1-2 sentences)\n   - Extract keywords for searchability\n   - Calculate estimated reading time\n   - Generate content hash for deduplication\n\n3. Create a GeneralContentProcessor class with methods:\n   - process(contentId): Promise<ProcessedContent>\n   - generateSummary(content): string\n   - extractKeywords(content): string[]\n   - calculateReadingTime(content): number\n\n4. Implement efficient storage and retrieval mechanisms\n\nTechnologies:\n- Text summarization using extractive techniques (no AI API calls)\n- Keyword extraction using TF-IDF or similar algorithms\n- SHA-256 for content hashing\n- Efficient JSON storage in PostgreSQL",
+        "testStrategy": "1. Test processing pipeline with various content types\n2. Verify summary generation produces readable results\n3. Test keyword extraction relevance\n4. Verify reading time calculation accuracy\n5. Test deduplication with similar content\n6. Measure processing performance and optimize if needed\n7. Verify storage and retrieval efficiency",
+        "priority": "medium",
+        "dependencies": [
+          6
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Design Lightweight JSON Structure",
+            "description": "Define a minimal JSON schema for general content storage, ensuring inclusion of essential metadata fields for search and deduplication.",
+            "dependencies": [],
+            "details": "Specify required fields such as id, url, title, sourceDomain, contentType, captureTimestamp, summary, keywords, readingTime, and contentHash. Ensure the structure is optimized for storage and retrieval with minimal overhead.",
+            "status": "pending",
+            "testStrategy": "Validate the schema using sample content and check compliance with JSON standards and project requirements."
+          },
+          {
+            "id": 2,
+            "title": "Develop Metadata Extraction Methods",
+            "description": "Implement functions to extract basic metadata (title, URL, source domain) from raw content.",
+            "dependencies": [
+              1
+            ],
+            "details": "Create robust parsers to reliably extract and populate metadata fields from various content types.",
+            "status": "pending",
+            "testStrategy": "Test extraction on a diverse set of content samples to ensure accuracy and completeness."
+          },
+          {
+            "id": 3,
+            "title": "Implement Content Processing Algorithms",
+            "description": "Develop algorithms for summary generation, keyword extraction using TF-IDF, reading time estimation, and SHA-256 content hashing.",
+            "dependencies": [
+              2
+            ],
+            "details": "Ensure all processing is lightweight and does not rely on external AI APIs. Integrate extractive summarization, TF-IDF keyword extraction, reading time calculation, and content hashing.",
+            "status": "pending",
+            "testStrategy": "Benchmark processing speed and verify output quality for each algorithm using test content."
+          },
+          {
+            "id": 4,
+            "title": "Create GeneralContentProcessor Class",
+            "description": "Develop a class encapsulating all processing logic with methods for processing content and generating required metadata.",
+            "dependencies": [
+              3
+            ],
+            "details": "Implement methods: process(contentId), generateSummary(content), extractKeywords(content), calculateReadingTime(content), and ensure seamless integration with the JSON structure.",
+            "status": "pending",
+            "testStrategy": "Unit test each method and perform integration tests to confirm correct end-to-end processing."
+          },
+          {
+            "id": 5,
+            "title": "Implement Efficient Storage and Retrieval",
+            "description": "Set up efficient JSON storage and retrieval mechanisms in PostgreSQL, ensuring scalability and fast search capability.",
+            "dependencies": [
+              4
+            ],
+            "details": "Optimize database schema for JSON storage, implement indexing for searchable fields, and validate retrieval performance.",
+            "status": "pending",
+            "testStrategy": "Load test storage and retrieval operations, and verify search accuracy and speed with realistic data volumes."
+          }
+        ]
+      },
+      {
+        "id": 9,
+        "title": "Topic Clustering Algorithm Implementation",
+        "description": "Implement semantic similarity-based topic clustering for grouping related content in daily digests with a maximum of 3-5 topic clusters per digest.",
+        "details": "1. Implement semantic similarity calculation:\n   - Use sentence transformers or similar embedding models\n   - Calculate cosine similarity between content items\n   - Create similarity matrix for all content items\n\n2. Implement clustering algorithm:\n   - Use hierarchical clustering or DBSCAN\n   - Set threshold for cluster formation\n   - Limit to 3-5 clusters per digest\n   - Ensure diversity across clusters\n\n3. Implement topic naming:\n   - Extract common themes from cluster items\n   - Generate descriptive names for each cluster\n   - Ensure names are distinct and informative\n\n4. Create a TopicClusterer class with methods:\n   - clusterContent(contentItems): ClusterResult[]\n   - calculateSimilarity(item1, item2): number\n   - generateTopicName(cluster): string\n\nTechnologies:\n- Sentence Transformers (all-MiniLM-L6-v2 or newer)\n- scikit-learn for clustering algorithms\n- TensorFlow.js or ONNX.js for running models locally\n- Efficient matrix operations for similarity calculations",
+        "testStrategy": "1. Test clustering with various content sets\n2. Verify cluster coherence (items in same cluster should be related)\n3. Test with edge cases (very similar content, very diverse content)\n4. Measure clustering performance and optimize if needed\n5. Verify topic naming produces meaningful results\n6. Test with real-world content from different domains\n7. Perform user testing to validate cluster usefulness",
+        "priority": "medium",
+        "dependencies": [
+          7,
+          8
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Prepare and Preprocess Content Data",
+            "description": "Aggregate and preprocess the daily digest content items, including text normalization, tokenization, and removal of irrelevant elements to ensure clean input for embedding.",
+            "dependencies": [],
+            "details": "This step ensures all content items are in a consistent format suitable for semantic embedding and clustering. Preprocessing may include lowercasing, punctuation removal, and stopword filtering.",
+            "status": "pending",
+            "testStrategy": "Verify that all content items are preprocessed correctly by inspecting a sample and ensuring no unwanted characters or formatting remain."
+          },
+          {
+            "id": 2,
+            "title": "Compute Semantic Embeddings and Similarity Matrix",
+            "description": "Generate semantic embeddings for each content item using a sentence transformer model and calculate the pairwise cosine similarity matrix.",
+            "dependencies": [
+              1
+            ],
+            "details": "Utilize models such as all-MiniLM-L6-v2 to encode content items into vector representations, then compute cosine similarity between all pairs to form a similarity matrix.",
+            "status": "pending",
+            "testStrategy": "Check that the similarity matrix is symmetric, has values between 0 and 1, and that similar items have higher similarity scores."
+          },
+          {
+            "id": 3,
+            "title": "Cluster Content Items Based on Similarity",
+            "description": "Apply a clustering algorithm (e.g., hierarchical clustering or DBSCAN) to group content items into 3-5 topic clusters per digest, ensuring diversity and relevance.",
+            "dependencies": [
+              2
+            ],
+            "details": "Configure clustering parameters to enforce the 3-5 cluster limit and maximize topical diversity. Use scikit-learn or similar libraries for implementation.",
+            "status": "pending",
+            "testStrategy": "Validate that the number of clusters per digest is within the specified range and that clusters contain semantically related items."
+          },
+          {
+            "id": 4,
+            "title": "Generate Descriptive Topic Names for Clusters",
+            "description": "Extract common themes from each cluster and generate distinct, informative topic names that accurately summarize the grouped content.",
+            "dependencies": [
+              3
+            ],
+            "details": "Analyze the content within each cluster to identify representative keywords or phrases and synthesize them into concise topic names.",
+            "status": "pending",
+            "testStrategy": "Review generated topic names for clarity, distinctiveness, and relevance to the cluster contents."
+          },
+          {
+            "id": 5,
+            "title": "Implement and Test the TopicClusterer Class",
+            "description": "Develop the TopicClusterer class with methods for clustering content, calculating similarity, and generating topic names, and validate its end-to-end functionality.",
+            "dependencies": [
+              4
+            ],
+            "details": "Integrate all previous steps into a reusable class with methods: clusterContent, calculateSimilarity, and generateTopicName. Ensure efficient matrix operations and compatibility with local model execution.",
+            "status": "pending",
+            "testStrategy": "Run unit and integration tests on the TopicClusterer class to confirm correct clustering, similarity calculation, and topic naming for sample digests."
+          }
+        ]
+      },
+      {
+        "id": 10,
+        "title": "Content Importance Ranking Algorithm",
+        "description": "Implement an importance scoring algorithm based on quality, freshness, and engagement factors to rank content within topic clusters.",
+        "details": "1. Design importance scoring formula:\n   - Quality score (from content analysis)\n   - Freshness factor (decay function based on age)\n   - Engagement potential (estimated based on content characteristics)\n   - Formula: Importance = Quality × Freshness × Engagement\n\n2. Implement freshness decay function:\n   - Exponential decay based on hours since publication\n   - Half-life of 24 hours for news content\n   - Configurable decay rate for different content types\n\n3. Implement engagement potential estimation:\n   - Analyze content virality signals\n   - Consider source reputation\n   - Evaluate content novelty\n\n4. Create an ImportanceRanker class with methods:\n   - rankContent(contentItems): RankedContent[]\n   - calculateImportance(contentItem): number\n   - calculateFreshness(timestamp): number\n   - estimateEngagement(contentItem): number\n\nTechnologies:\n- Custom scoring algorithms\n- Time-based decay functions\n- Machine learning for engagement prediction (optional)\n- Configurable weighting system",
+        "testStrategy": "1. Test ranking with various content sets\n2. Verify freshness decay works as expected\n3. Test engagement estimation with known high/low engagement content\n4. Verify overall ranking produces intuitive results\n5. Test with edge cases (all high quality, all low quality, etc.)\n6. Perform user testing to validate ranking usefulness\n7. Compare algorithm results with human expert ranking",
+        "priority": "medium",
+        "dependencies": [
+          9
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Define and Formalize Importance Scoring Formula",
+            "description": "Develop a comprehensive formula that combines quality, freshness, and engagement factors to calculate an importance score for content within topic clusters.",
+            "dependencies": [],
+            "details": "Specify how each factor (quality, freshness, engagement) contributes to the overall importance score and ensure the formula is configurable for different content types.",
+            "status": "pending",
+            "testStrategy": "Validate the formula with sample data to ensure it produces logical and expected rankings across diverse content scenarios."
+          },
+          {
+            "id": 2,
+            "title": "Implement Freshness Decay Function",
+            "description": "Create an exponential decay function to model content freshness, with configurable half-life and decay rates for different content types.",
+            "dependencies": [
+              1
+            ],
+            "details": "Ensure the function accurately reduces the freshness score over time, with a default half-life of 24 hours for news content and adjustable parameters for other types.",
+            "status": "pending",
+            "testStrategy": "Test the decay function with timestamps at various intervals to confirm correct score reduction and configurability."
+          },
+          {
+            "id": 3,
+            "title": "Develop Engagement Potential Estimation",
+            "description": "Design and implement a method to estimate engagement potential based on content virality signals, source reputation, and content novelty.",
+            "dependencies": [
+              1
+            ],
+            "details": "Incorporate signals such as click metrics, originality, and reputation to generate a predictive engagement score for each content item.",
+            "status": "pending",
+            "testStrategy": "Compare estimated engagement scores with historical engagement data to assess prediction accuracy."
+          },
+          {
+            "id": 4,
+            "title": "Build ImportanceRanker Class and Core Methods",
+            "description": "Develop the ImportanceRanker class with methods for ranking content, calculating importance, computing freshness, and estimating engagement.",
+            "dependencies": [
+              1,
+              2,
+              3
+            ],
+            "details": "Implement methods: rankContent(contentItems), calculateImportance(contentItem), calculateFreshness(timestamp), and estimateEngagement(contentItem) as specified.",
+            "status": "pending",
+            "testStrategy": "Unit test each method with controlled inputs to verify correct outputs and integration of all scoring components."
+          },
+          {
+            "id": 5,
+            "title": "Integrate Configurable Weighting and Machine Learning (Optional)",
+            "description": "Enable configurable weighting for each scoring factor and optionally integrate machine learning models to enhance engagement prediction.",
+            "dependencies": [
+              4
+            ],
+            "details": "Allow system administrators to adjust weights for quality, freshness, and engagement. If ML is used, train and validate models for engagement estimation.",
+            "status": "pending",
+            "testStrategy": "Test configuration changes for expected impact on rankings and, if ML is used, evaluate model performance using standard metrics."
+          }
+        ]
+      },
+      {
+        "id": 11,
+        "title": "Daily Digest Generation Service",
+        "description": "Implement a service to generate daily digests by combining topic clustering, importance ranking, and content diversity filtering into a markdown format.",
+        "details": "1. Create a DigestGenerator service with the following components:\n   - Content selection based on date range\n   - Topic clustering integration\n   - Importance ranking integration\n   - Diversity filtering to ensure varied perspectives\n   - Markdown formatting\n\n2. Implement digest generation pipeline:\n   - Fetch content captured in the last 24 hours\n   - Apply topic clustering to group related content\n   - Rank content within clusters by importance\n   - Select top 3-5 clusters based on overall importance\n   - Format digest in markdown with sections for each cluster\n\n3. Implement markdown template system:\n   - Header with date and summary\n   - Sections for each topic cluster\n   - Content items with summaries and links\n   - Footer with statistics\n\n4. Schedule daily digest generation:\n   - Configurable generation time\n   - Retry mechanism for failures\n   - Notification on completion\n\nTechnologies:\n- Node.js cron jobs or dedicated scheduler\n- Markdown-it for markdown generation\n- Templating system (Handlebars, EJS, or similar)\n- Transaction support for atomic digest creation",
+        "testStrategy": "1. Test digest generation with various content sets\n2. Verify digest format is readable and well-structured\n3. Test scheduling and retry mechanisms\n4. Verify diversity filtering works as expected\n5. Test with edge cases (very few content items, many similar items)\n6. Measure generation performance and optimize if needed\n7. Perform user testing to validate digest usefulness",
+        "priority": "high",
+        "dependencies": [
+          9,
+          10
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Content Retrieval and Preprocessing",
+            "description": "Fetch content captured within the last 24 hours and preprocess it for analysis, including cleaning, deduplication, and metadata extraction.",
+            "dependencies": [],
+            "details": "Implement logic to retrieve all relevant content items from the data source based on the specified date range. Preprocess the content to ensure consistency and readiness for clustering and ranking.",
+            "status": "pending",
+            "testStrategy": "Verify that the service correctly fetches and preprocesses all content items from the last 24 hours, with accurate metadata and no duplicates."
+          },
+          {
+            "id": 2,
+            "title": "Topic Clustering Integration",
+            "description": "Apply topic clustering algorithms to group related content items into coherent clusters.",
+            "dependencies": [
+              1
+            ],
+            "details": "Use machine learning or NLP-based clustering techniques to organize content into topic clusters, ensuring each cluster represents a distinct subject area.",
+            "status": "pending",
+            "testStrategy": "Test with sample content to confirm that related items are grouped together and clusters are meaningful and distinct."
+          },
+          {
+            "id": 3,
+            "title": "Importance Ranking and Diversity Filtering",
+            "description": "Rank content within each cluster by importance and apply diversity filtering to ensure varied perspectives are represented.",
+            "dependencies": [
+              2
+            ],
+            "details": "Implement ranking algorithms to prioritize content based on relevance, authority, or engagement metrics. Apply diversity filters to avoid redundancy and ensure a range of viewpoints within each cluster.",
+            "status": "pending",
+            "testStrategy": "Check that top-ranked items are relevant and that selected content within clusters reflects diverse sources or perspectives."
+          },
+          {
+            "id": 4,
+            "title": "Markdown Digest Formatting and Templating",
+            "description": "Format the selected content into a markdown digest using a templating system, including headers, cluster sections, summaries, links, and a footer with statistics.",
+            "dependencies": [
+              3
+            ],
+            "details": "Develop or configure a markdown template that structures the digest with a date header, summary, topic cluster sections, content summaries with links, and a statistics footer.",
+            "status": "pending",
+            "testStrategy": "Generate sample digests and review formatting for correctness, completeness, and readability in markdown."
+          },
+          {
+            "id": 5,
+            "title": "Scheduling, Transaction Support, and Notification",
+            "description": "Implement a scheduler for daily digest generation, ensure atomic transaction support, and set up notifications for completion or failure.",
+            "dependencies": [
+              4
+            ],
+            "details": "Configure a cron job or scheduler to trigger digest generation at a configurable time, ensure the process is atomic to prevent partial digests, and send notifications upon success or failure.",
+            "status": "pending",
+            "testStrategy": "Simulate scheduled runs, verify atomicity by testing failure scenarios, and confirm notifications are sent as expected."
+          }
+        ]
+      },
+      {
+        "id": 12,
+        "title": "Email Delivery System Implementation",
+        "description": "Implement an email delivery system for daily digests with mobile-responsive design and user-configurable delivery time.",
+        "details": "1. Design mobile-responsive email template:\n   - Clean, readable layout\n   - Proper formatting for different screen sizes\n   - Accessible design (proper contrast, font sizes)\n   - Support for dark/light mode\n\n2. Implement email generation service:\n   - Convert markdown digest to HTML email\n   - Add tracking pixels for open rate monitoring\n   - Include unsubscribe link\n   - Add links to web version\n\n3. Integrate with email delivery service:\n   - Set up SMTP server or use service like SendGrid/Mailgun\n   - Implement delivery scheduling\n   - Handle bounces and delivery failures\n   - Track open rates and clicks\n\n4. Create an EmailDeliveryService class with methods:\n   - scheduleDelivery(digestId, time): Promise<DeliveryResult>\n   - generateEmailHtml(digestMarkdown): string\n   - sendEmail(recipient, subject, html): Promise<SendResult>\n   - trackDeliveryStatus(deliveryId): DeliveryStatus\n\nTechnologies:\n- MJML or Foundation for Emails for responsive email templates\n- Nodemailer for email sending\n- SendGrid, Mailgun, or similar service for delivery\n- Email analytics tracking",
+        "testStrategy": "1. Test email rendering on various devices and email clients\n2. Verify responsive design works properly\n3. Test delivery scheduling and timing\n4. Verify tracking works correctly\n5. Test with various digest sizes and content types\n6. Perform user testing to validate email readability\n7. Test delivery reliability and error handling",
+        "priority": "medium",
+        "dependencies": [
+          11
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Design Mobile-Responsive Email Template",
+            "description": "Create a clean, accessible, and mobile-responsive email template for daily digests, ensuring proper formatting for various screen sizes and support for dark/light modes.",
+            "dependencies": [],
+            "details": "Utilize frameworks like MJML or Foundation for Emails to ensure the template is visually appealing, readable, and accessible across devices. Incorporate best practices such as clear content hierarchy, sufficient white space, and balanced use of images and text.",
+            "status": "pending",
+            "testStrategy": "Render the template on multiple devices and email clients, test for accessibility compliance, and verify dark/light mode support."
+          },
+          {
+            "id": 2,
+            "title": "Develop Email Generation Service",
+            "description": "Implement a service to convert markdown digests into HTML emails, embed tracking pixels, add unsubscribe links, and include web version links.",
+            "dependencies": [
+              1
+            ],
+            "details": "Ensure the service accurately transforms markdown content, integrates analytics tracking, and complies with unsubscribe requirements. The generated HTML should be compatible with the designed template.",
+            "status": "pending",
+            "testStrategy": "Unit test markdown-to-HTML conversion, verify presence and functionality of tracking pixels, unsubscribe, and web version links."
+          },
+          {
+            "id": 3,
+            "title": "Integrate with Email Delivery Provider",
+            "description": "Set up and configure an email delivery provider (SMTP, SendGrid, Mailgun, etc.), implement delivery scheduling, and handle bounces and delivery failures.",
+            "dependencies": [
+              2
+            ],
+            "details": "Configure the chosen provider, implement scheduling logic for user-configurable delivery times, and set up mechanisms to track and handle delivery issues.",
+            "status": "pending",
+            "testStrategy": "Send test emails, simulate bounces and failures, and verify correct scheduling and error handling."
+          },
+          {
+            "id": 4,
+            "title": "Implement EmailDeliveryService Class",
+            "description": "Develop the EmailDeliveryService class with methods for scheduling, generating, sending, and tracking email deliveries.",
+            "dependencies": [
+              3
+            ],
+            "details": "Ensure the class exposes methods: scheduleDelivery, generateEmailHtml, sendEmail, and trackDeliveryStatus, and integrates with the email generation and delivery components.",
+            "status": "pending",
+            "testStrategy": "Write unit and integration tests for each method, ensuring correct operation and error handling."
+          },
+          {
+            "id": 5,
+            "title": "Enable User-Configurable Delivery Time",
+            "description": "Implement functionality allowing users to select and update their preferred daily digest delivery time.",
+            "dependencies": [
+              4
+            ],
+            "details": "Provide a user interface for configuring delivery time, store preferences, and ensure the scheduling system respects user settings.",
+            "status": "pending",
+            "testStrategy": "Test user interface for updating preferences, verify backend scheduling logic, and confirm emails are sent at user-selected times."
+          }
+        ]
+      },
+      {
+        "id": 13,
+        "title": "Text-to-Speech Audio Generation",
+        "description": "Implement TTS audio generation for daily digests with natural voice synthesis and chapter markers for enhanced retention.",
+        "details": "1. Integrate with TTS service:\n   - Google Cloud Text-to-Speech API (primary)\n   - Amazon Polly or Microsoft Azure TTS as fallback\n   - Select natural-sounding voice\n\n2. Implement audio generation pipeline:\n   - Convert digest markdown to SSML format\n   - Add proper pauses, emphasis, and pronunciation\n   - Generate chapter markers for each topic\n   - Create MP3 file with metadata\n\n3. Implement audio storage and delivery:\n   - Store audio files in secure location\n   - Generate unique URLs for access\n   - Implement streaming capability\n   - Support for variable playback speed\n\n4. Create an AudioGenerator class with methods:\n   - generateAudio(digestId): Promise<AudioResult>\n   - convertToSSML(markdown): string\n   - createChapterMarkers(digest): ChapterMarker[]\n   - getAudioUrl(audioId): string\n\nTechnologies:\n- Google Cloud Text-to-Speech API\n- SSML for speech markup\n- FFmpeg for audio processing\n- MP3 with chapter markers support\n- Audio streaming with proper caching",
+        "testStrategy": "1. Test audio quality with various content\n2. Verify SSML conversion produces natural speech\n3. Test chapter markers functionality\n4. Verify streaming works properly\n5. Test with various digest sizes and content types\n6. Perform user testing to validate audio quality\n7. Test fallback mechanisms by simulating primary service failure",
+        "priority": "medium",
+        "dependencies": [
+          11
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Set Up and Authenticate TTS Services",
+            "description": "Configure and authenticate access to Google Cloud Text-to-Speech API as the primary service, with Amazon Polly and Microsoft Azure TTS as fallback options. Ensure credentials and billing are properly set up.",
+            "dependencies": [],
+            "details": "Create and configure projects on each TTS platform, enable APIs, generate and securely store service account credentials, and verify connectivity to all services.",
+            "status": "pending",
+            "testStrategy": "Attempt a test API call to each TTS provider and confirm successful authentication and response."
+          },
+          {
+            "id": 2,
+            "title": "Develop Markdown-to-SSML Conversion Module",
+            "description": "Implement a module to convert daily digest markdown content into SSML, adding appropriate pauses, emphasis, and pronunciation for natural-sounding speech.",
+            "dependencies": [
+              1
+            ],
+            "details": "Parse markdown, map formatting to SSML tags, and insert speech markup for improved clarity and retention.",
+            "status": "pending",
+            "testStrategy": "Input sample markdown and verify the generated SSML output matches expected structure and includes correct speech markup."
+          },
+          {
+            "id": 3,
+            "title": "Implement Audio Generation Pipeline with Chapter Markers",
+            "description": "Build the pipeline to generate audio from SSML using the selected TTS service, ensuring natural voice synthesis and embedding chapter markers for each digest topic.",
+            "dependencies": [
+              2
+            ],
+            "details": "Send SSML to TTS API, select optimal voice, process audio output, and use tools like FFmpeg to add chapter markers and metadata to the MP3 file.",
+            "status": "pending",
+            "testStrategy": "Generate audio for a sample digest, confirm chapter markers are present and correctly aligned, and review audio quality for naturalness."
+          },
+          {
+            "id": 4,
+            "title": "Design Audio Storage and Delivery System",
+            "description": "Create a secure storage solution for generated audio files, implement unique URL generation, enable streaming, and support variable playback speed.",
+            "dependencies": [
+              3
+            ],
+            "details": "Store MP3 files in a secure cloud location, generate access URLs, configure streaming endpoints, and integrate playback speed controls.",
+            "status": "pending",
+            "testStrategy": "Upload a test audio file, access it via generated URL, verify streaming functionality, and test playback speed adjustments."
+          },
+          {
+            "id": 5,
+            "title": "Develop AudioGenerator Class and API Methods",
+            "description": "Implement the AudioGenerator class with methods for audio generation, SSML conversion, chapter marker creation, and audio URL retrieval, exposing a clean API.",
+            "dependencies": [
+              4
+            ],
+            "details": "Provide methods: generateAudio(digestId), convertToSSML(markdown), createChapterMarkers(digest), and getAudioUrl(audioId), ensuring robust error handling and fallback logic.",
+            "status": "pending",
+            "testStrategy": "Write unit and integration tests for each method, simulate various input scenarios, and validate correct outputs and error handling."
+          }
+        ]
+      },
+      {
+        "id": 14,
+        "title": "Web Interface Dashboard Development",
+        "description": "Develop a web interface dashboard with recent captures, statistics, search, filter, and bulk operations functionality.",
+        "details": "1. Design and implement dashboard UI:\n   - Recent captures section\n   - Statistics overview (capture rate, processing status)\n   - Search and filter functionality\n   - Bulk operations (tag, delete, reprocess)\n\n2. Implement content management features:\n   - Content list with pagination\n   - Content detail view\n   - Manual editing and tagging\n   - Classification override\n\n3. Implement digest management:\n   - Digest list with calendar view\n   - Digest detail view\n   - Manual digest generation\n   - Digest editing\n\n4. Create configuration section:\n   - AI model selection\n   - Digest preferences\n   - Email delivery settings\n   - System performance settings\n\nTechnologies:\n- React 18+ or Vue 3+ for frontend\n- Tailwind CSS or Material UI for styling\n- React Query or SWR for data fetching\n- Chart.js or D3.js for statistics visualization\n- React Router or Vue Router for navigation",
+        "testStrategy": "1. Test UI on various devices and screen sizes\n2. Verify all features work as expected\n3. Test search and filter functionality\n4. Verify bulk operations work correctly\n5. Test with large datasets for performance\n6. Perform user testing to validate usability\n7. Test accessibility compliance",
+        "priority": "medium",
+        "dependencies": [
+          5
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Design Dashboard UI and Information Architecture",
+            "description": "Create the overall layout and structure for the dashboard, ensuring clear presentation of recent captures, statistics, search, filter, and bulk operations. Prioritize information hierarchy and user-centric design.",
+            "dependencies": [],
+            "details": "Develop wireframes and prototypes that emphasize key metrics and usability. Apply best practices for dashboard clarity, grouping, and navigation to avoid information overload.",
+            "status": "pending",
+            "testStrategy": "Conduct usability testing with representative users to validate layout clarity, navigation, and information accessibility."
+          },
+          {
+            "id": 2,
+            "title": "Implement Data Visualization and Statistics Overview",
+            "description": "Integrate data visualization components to display capture rates, processing status, and other relevant statistics using Chart.js or D3.js.",
+            "dependencies": [
+              1
+            ],
+            "details": "Develop interactive charts and summary widgets that provide at-a-glance insights. Ensure visualizations are responsive and accessible.",
+            "status": "pending",
+            "testStrategy": "Verify accuracy of displayed statistics and responsiveness of charts across devices. Test with sample datasets for correctness."
+          },
+          {
+            "id": 3,
+            "title": "Develop Search, Filter, and Bulk Operations Functionality",
+            "description": "Build robust search and filter tools for content management, and implement bulk operations such as tagging, deleting, and reprocessing.",
+            "dependencies": [
+              1
+            ],
+            "details": "Ensure filters and search are intuitive and performant. Bulk actions should provide feedback and support undo where feasible.",
+            "status": "pending",
+            "testStrategy": "Test search/filter accuracy and speed. Validate bulk operations on large datasets and confirm correct execution and error handling."
+          },
+          {
+            "id": 4,
+            "title": "Implement Content and Digest Management Features",
+            "description": "Develop content list with pagination, detail views, manual editing/tagging, classification override, and digest management (calendar view, manual generation, editing).",
+            "dependencies": [
+              1,
+              2,
+              3
+            ],
+            "details": "Ensure seamless navigation between content and digest views. Support manual overrides and editing with clear user feedback.",
+            "status": "pending",
+            "testStrategy": "Perform end-to-end tests for content and digest workflows, including editing, tagging, and digest generation. Validate data integrity after operations."
+          },
+          {
+            "id": 5,
+            "title": "Create Configuration and Settings Section",
+            "description": "Develop a configuration area for AI model selection, digest preferences, email delivery, and system performance settings.",
+            "dependencies": [
+              4
+            ],
+            "details": "Provide intuitive forms and controls for all configuration options. Ensure changes are validated and saved correctly.",
+            "status": "pending",
+            "testStrategy": "Test all configuration options for correct persistence and effect. Validate error handling and user feedback for invalid inputs."
+          }
+        ]
+      },
+      {
+        "id": 15,
+        "title": "Search and Filter Functionality Implementation",
+        "description": "Implement comprehensive search and filter functionality for content and digests with full-text search and advanced filtering options.",
+        "details": "1. Implement full-text search:\n   - Set up PostgreSQL full-text search\n   - Create search indexes for content and digests\n   - Implement relevance ranking\n   - Support for phrase search and boolean operators\n\n2. Implement advanced filtering:\n   - Filter by date range\n   - Filter by content type\n   - Filter by political classification\n   - Filter by source domain\n   - Filter by quality score\n\n3. Create search API endpoints:\n   - GET /api/search/content - Search content\n   - GET /api/search/digests - Search digests\n\n4. Implement search UI components:\n   - Search input with autocomplete\n   - Filter sidebar with multiple options\n   - Search results display\n   - Pagination and sorting\n\nTechnologies:\n- PostgreSQL full-text search with tsvector and tsquery\n- Proper indexing for performance\n- Debounced search input\n- Filter state management\n- Search history tracking",
+        "testStrategy": "1. Test search with various queries and content\n2. Verify relevance ranking produces expected results\n3. Test filtering with multiple combinations\n4. Verify performance with large datasets\n5. Test edge cases (empty results, very large results)\n6. Perform user testing to validate search usability\n7. Test accessibility of search components",
+        "priority": "medium",
+        "dependencies": [
+          14
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Set Up PostgreSQL Full-Text Search and Indexes",
+            "description": "Configure PostgreSQL full-text search for content and digests, including creating tsvector columns and appropriate indexes to support efficient full-text queries.",
+            "dependencies": [],
+            "details": "Add tsvector columns to relevant tables, populate them using to_tsvector, and create GIN or GiST indexes for performance. Ensure support for phrase search and boolean operators.",
+            "status": "pending",
+            "testStrategy": "Verify that full-text search queries return accurate results and that indexes are used for query performance."
+          },
+          {
+            "id": 2,
+            "title": "Implement Relevance Ranking and Boolean Search Logic",
+            "description": "Develop logic for ranking search results by relevance and supporting phrase search, AND/OR/NOT operators, and other advanced query features.",
+            "dependencies": [
+              1
+            ],
+            "details": "Utilize PostgreSQL's ts_rank or ts_rank_cd functions for relevance. Parse and handle boolean operators and phrase queries in search input.",
+            "status": "pending",
+            "testStrategy": "Test with various search queries to ensure correct ranking and operator handling."
+          },
+          {
+            "id": 3,
+            "title": "Develop Advanced Filtering Capabilities",
+            "description": "Implement filtering by date range, content type, political classification, source domain, and quality score for both content and digests.",
+            "dependencies": [
+              1
+            ],
+            "details": "Extend search queries to include filter conditions. Ensure filters can be combined and applied efficiently.",
+            "status": "pending",
+            "testStrategy": "Run search queries with different filter combinations and validate filtered results."
+          },
+          {
+            "id": 4,
+            "title": "Create and Document Search API Endpoints",
+            "description": "Develop REST API endpoints for searching content and digests, supporting full-text search, relevance ranking, and advanced filtering.",
+            "dependencies": [
+              2,
+              3
+            ],
+            "details": "Implement GET /api/search/content and GET /api/search/digests endpoints. Document request parameters and response formats.",
+            "status": "pending",
+            "testStrategy": "Use API tests to verify endpoint functionality, parameter handling, and response accuracy."
+          },
+          {
+            "id": 5,
+            "title": "Build Search UI Components and Integrate with API",
+            "description": "Design and implement UI components for search input (with autocomplete), filter sidebar, results display, pagination, and sorting. Integrate with the search API and manage filter/search state.",
+            "dependencies": [
+              4
+            ],
+            "details": "Ensure debounced search input, filter state management, and search history tracking. Provide a responsive and intuitive user experience.",
+            "status": "pending",
+            "testStrategy": "Perform end-to-end UI testing to confirm correct API integration, UI responsiveness, and accurate display of search/filter results."
+          }
+        ]
+      },
+      {
+        "id": 16,
+        "title": "Manual Content Editing and Tag Management",
+        "description": "Implement functionality for manual content editing, classification override, and tag management to handle edge cases and improve system accuracy.",
+        "details": "1. Implement content editing interface:\n   - Edit title and metadata\n   - Edit summaries and key points\n   - Override AI-generated analysis\n   - Add notes and annotations\n\n2. Implement classification override:\n   - Manual political/general classification\n   - Manual bias assessment\n   - Quality score adjustment\n   - Source credibility override\n\n3. Implement tag management:\n   - Create custom tags\n   - Assign tags to content\n   - Tag-based filtering\n   - Tag statistics\n\n4. Create audit trail for manual changes:\n   - Track all manual edits\n   - Record user, timestamp, and changes\n   - Provide option to revert changes\n\nTechnologies:\n- Rich text editor (TinyMCE, CKEditor, or similar)\n- Tag input component with autocomplete\n- Optimistic UI updates\n- Audit logging system\n- Undo/redo functionality",
+        "testStrategy": "1. Test editing functionality with various content\n2. Verify classification override works correctly\n3. Test tag management features\n4. Verify audit trail records all changes\n5. Test undo/redo functionality\n6. Perform user testing to validate editing usability\n7. Test with edge cases (very long content, special characters)",
+        "priority": "low",
+        "dependencies": [
+          14
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Develop Manual Content Editing Interface",
+            "description": "Design and implement a user-friendly interface for manual editing of content, including editing titles, metadata, summaries, key points, and adding notes or annotations.",
+            "dependencies": [],
+            "details": "Utilize a rich text editor (e.g., TinyMCE, CKEditor) and ensure clear, descriptive labels and logical grouping of editing functions for usability. Incorporate responsive design and tooltips for guidance.",
+            "status": "pending",
+            "testStrategy": "Conduct usability testing with representative users to verify editing features, interface clarity, and accessibility across devices."
+          },
+          {
+            "id": 2,
+            "title": "Implement Manual Classification and Override Controls",
+            "description": "Enable manual override of AI-generated classifications, including political/general categorization, bias assessment, quality scoring, and source credibility.",
+            "dependencies": [
+              1
+            ],
+            "details": "Provide intuitive controls for users to adjust classifications and scores, ensuring changes are clearly reflected in the interface and can be reverted if needed.",
+            "status": "pending",
+            "testStrategy": "Test override functionality for accuracy, auditability, and UI feedback. Validate that manual changes persist and can be reverted."
+          },
+          {
+            "id": 3,
+            "title": "Build Tag Management System",
+            "description": "Create a robust tag management system allowing users to create, assign, filter, and analyze custom tags for content.",
+            "dependencies": [
+              1
+            ],
+            "details": "Implement a tag input component with autocomplete, tag-based filtering, and tag statistics. Ensure tags are easy to manage and visually distinct.",
+            "status": "pending",
+            "testStrategy": "Verify tag creation, assignment, filtering, and statistics through unit and integration tests. Assess usability with user feedback."
+          },
+          {
+            "id": 4,
+            "title": "Integrate Audit Trail and Change Tracking",
+            "description": "Develop an audit logging system to track all manual edits, including user, timestamp, and details of changes, with the ability to revert edits.",
+            "dependencies": [
+              1,
+              2,
+              3
+            ],
+            "details": "Ensure every manual change is logged and visible in an audit trail. Provide undo/redo functionality and clear options to revert changes.",
+            "status": "pending",
+            "testStrategy": "Test audit logs for completeness and accuracy. Simulate edit/revert scenarios to confirm proper tracking and rollback."
+          },
+          {
+            "id": 5,
+            "title": "Optimize UI Responsiveness and Feedback",
+            "description": "Implement optimistic UI updates and responsive design to ensure seamless user experience during manual edits, classification overrides, and tag management.",
+            "dependencies": [
+              1,
+              2,
+              3,
+              4
+            ],
+            "details": "Ensure interface adapts to various devices, provides immediate feedback on actions, and maintains performance during concurrent edits.",
+            "status": "pending",
+            "testStrategy": "Perform cross-device and performance testing. Validate optimistic updates and feedback mechanisms under different network conditions."
+          }
+        ]
+      },
+      {
+        "id": 17,
+        "title": "Configuration Settings Implementation",
+        "description": "Implement configuration settings for digest preferences, AI models, email delivery, and system performance to allow user customization.",
+        "details": "1. Implement digest preferences:\n   - Number of topic clusters (1-10)\n   - Content diversity settings\n   - Inclusion/exclusion of content types\n   - Minimum quality threshold\n\n2. Implement AI model configuration:\n   - Model selection (Gemini, OpenAI, Anthropic)\n   - API key management\n   - Confidence threshold settings\n   - Processing priority\n\n3. Implement email delivery settings:\n   - Delivery time\n   - Email format preferences\n   - Include/exclude audio links\n   - Notification preferences\n\n4. Implement system performance settings:\n   - Concurrent processing limit\n   - Storage retention policy\n   - Backup frequency\n   - Resource allocation\n\n5. Create a configuration service with persistence\n\nTechnologies:\n- Configuration schema validation\n- Secure storage for API keys\n- UI components for settings\n- Real-time validation\n- Configuration versioning",
+        "testStrategy": "1. Test all configuration options\n2. Verify changes are persisted correctly\n3. Test with invalid configurations\n4. Verify system behavior changes with configuration\n5. Test API key validation\n6. Perform user testing to validate settings usability\n7. Test configuration import/export",
+        "priority": "low",
+        "dependencies": [
+          14
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Design Configuration Schema and Validation Logic",
+            "description": "Define a comprehensive configuration schema covering digest preferences, AI model settings, email delivery, and system performance. Implement validation logic for real-time feedback and ensure schema versioning support.",
+            "dependencies": [],
+            "details": "The schema should support all user-customizable options, enforce allowed value ranges (e.g., topic clusters 1-10), and provide mechanisms for backward compatibility as settings evolve.",
+            "status": "pending",
+            "testStrategy": "Unit test schema validation with valid and invalid configurations; verify versioning compatibility."
+          },
+          {
+            "id": 2,
+            "title": "Implement Secure Storage and API Key Management",
+            "description": "Develop secure storage mechanisms for configuration data and sensitive information such as API keys, ensuring encryption and access control.",
+            "dependencies": [
+              1
+            ],
+            "details": "Use industry-standard encryption for API keys and sensitive settings. Integrate access control to restrict unauthorized access and support secure retrieval for runtime use.",
+            "status": "pending",
+            "testStrategy": "Perform security audits, penetration testing, and verify encryption/decryption routines."
+          },
+          {
+            "id": 3,
+            "title": "Develop UI Components for Configuration Settings",
+            "description": "Create user interface components for managing all configuration settings, including real-time validation and user feedback.",
+            "dependencies": [
+              1
+            ],
+            "details": "UI should allow users to customize digest, AI model, email, and performance settings with immediate validation feedback. Ensure accessibility and responsive design.",
+            "status": "pending",
+            "testStrategy": "Conduct usability testing, validate real-time feedback, and test all input scenarios."
+          },
+          {
+            "id": 4,
+            "title": "Implement Configuration Service with Persistence and Versioning",
+            "description": "Build a backend service to persist configuration changes, manage versioning, and provide APIs for retrieving and updating settings.",
+            "dependencies": [
+              1,
+              2
+            ],
+            "details": "Service should support atomic updates, rollback to previous versions, and expose secure endpoints for configuration management.",
+            "status": "pending",
+            "testStrategy": "Integration test API endpoints, simulate concurrent updates, and verify version rollback functionality."
+          },
+          {
+            "id": 5,
+            "title": "Integrate Configuration Settings with Application Logic",
+            "description": "Connect configuration settings to application modules for digest generation, AI model selection, email delivery, and system performance tuning.",
+            "dependencies": [
+              3,
+              4
+            ],
+            "details": "Ensure all modules consume the latest configuration, handle changes dynamically, and respect user preferences in real-time operations.",
+            "status": "pending",
+            "testStrategy": "End-to-end test user flows, verify settings propagation, and monitor system behavior under different configurations."
+          }
+        ]
+      },
+      {
+        "id": 18,
+        "title": "System Monitoring and Analytics Implementation",
+        "description": "Implement comprehensive system monitoring and analytics to track system health, performance metrics, and user engagement.",
+        "details": "1. Implement system health monitoring:\n   - Server resource usage (CPU, memory, disk)\n   - Database performance metrics\n   - API response times\n   - Error rates and types\n\n2. Implement content analytics:\n   - Capture rate by source\n   - Processing success rate\n   - Classification accuracy\n   - Content type distribution\n\n3. Implement user engagement analytics:\n   - Digest open rates\n   - Audio playback statistics\n   - Feature usage patterns\n   - Search and filter usage\n\n4. Create dashboards and alerts:\n   - Real-time system dashboard\n   - Daily/weekly reports\n   - Anomaly detection and alerts\n   - Performance trend analysis\n\nTechnologies:\n- Prometheus for metrics collection\n- Grafana for dashboards\n- Winston or Pino for structured logging\n- ELK stack or Loki for log analysis\n- Custom analytics tracking",
+        "testStrategy": "1. Verify all metrics are collected correctly\n2. Test dashboard functionality\n3. Verify alerts trigger appropriately\n4. Test with simulated system load\n5. Verify analytics accuracy\n6. Test report generation\n7. Verify log rotation and retention",
+        "priority": "low",
+        "dependencies": [
+          1
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Define Monitoring and Analytics Objectives",
+            "description": "Establish clear goals for system monitoring and analytics, including identifying key metrics for system health, performance, and user engagement that align with business objectives.",
+            "dependencies": [],
+            "details": "Work with stakeholders to determine what needs to be monitored, why, and what success looks like. Specify metrics such as CPU, memory, API response times, error rates, content analytics, and user engagement indicators.",
+            "status": "pending",
+            "testStrategy": "Review documented objectives and metrics with stakeholders for completeness and alignment with business needs."
+          },
+          {
+            "id": 2,
+            "title": "Select and Configure Monitoring and Analytics Tools",
+            "description": "Evaluate, select, and configure appropriate tools for metrics collection, logging, and analytics based on defined requirements.",
+            "dependencies": [
+              1
+            ],
+            "details": "Assess tools like Prometheus, Grafana, ELK stack, Loki, and custom analytics solutions for compatibility and scalability. Configure agents, log shippers, and integrations as needed.",
+            "status": "pending",
+            "testStrategy": "Perform proof-of-concept deployments and validate tool compatibility and data collection capabilities."
+          },
+          {
+            "id": 3,
+            "title": "Implement Data Collection and Logging",
+            "description": "Set up comprehensive data collection for system health, performance, content analytics, and user engagement, ensuring structured logging and reliable data pipelines.",
+            "dependencies": [
+              2
+            ],
+            "details": "Deploy and configure monitoring agents, loggers (Winston/Pino), and analytics trackers to capture all required metrics and logs from servers, databases, APIs, and user interactions.",
+            "status": "pending",
+            "testStrategy": "Verify that all targeted metrics and logs are being collected and stored correctly by simulating system activity and reviewing collected data."
+          },
+          {
+            "id": 4,
+            "title": "Develop Dashboards, Reports, and Alerting Mechanisms",
+            "description": "Create real-time dashboards, scheduled reports, and automated alerting for system health, performance trends, and anomalies.",
+            "dependencies": [
+              3
+            ],
+            "details": "Use Grafana and other visualization tools to build dashboards for different audiences. Set up alert rules for anomalies and thresholds, and configure reporting schedules.",
+            "status": "pending",
+            "testStrategy": "Test dashboards for data accuracy and usability. Simulate anomalies to ensure alerts trigger and are delivered to the appropriate channels."
+          },
+          {
+            "id": 5,
+            "title": "Establish Continuous Monitoring, Review, and Optimization Processes",
+            "description": "Implement ongoing monitoring, regular review of analytics, and continuous improvement processes to ensure system reliability and actionable insights.",
+            "dependencies": [
+              4
+            ],
+            "details": "Schedule periodic reviews of monitoring effectiveness, update metrics and alert thresholds as needed, and optimize data collection and visualization based on feedback and evolving requirements.",
+            "status": "pending",
+            "testStrategy": "Conduct regular audits of monitoring coverage and incident response effectiveness. Gather feedback from stakeholders and iterate on monitoring configurations."
+          }
+        ]
+      },
+      {
+        "id": 19,
+        "title": "Security Implementation and Hardening",
+        "description": "Implement comprehensive security measures including authentication, authorization, encryption, and security best practices to protect user data and system integrity.",
+        "details": "1. Implement authentication system:\n   - JWT-based authentication\n   - Secure password storage with bcrypt\n   - Multi-factor authentication option\n   - Session management and timeout\n\n2. Implement authorization system:\n   - Role-based access control\n   - Resource-level permissions\n   - API endpoint protection\n\n3. Implement data encryption:\n   - Database encryption at rest\n   - TLS for all communications\n   - API key encryption\n   - Content encryption\n\n4. Implement security best practices:\n   - Input validation and sanitization\n   - CSRF protection\n   - Rate limiting\n   - Security headers (CSP, HSTS, etc.)\n   - Regular security audits\n\nTechnologies:\n- Passport.js or similar for authentication\n- bcrypt for password hashing\n- CASL or similar for authorization\n- Helmet.js for security headers\n- express-rate-limit for rate limiting\n- Content Security Policy implementation",
+        "testStrategy": "1. Perform security audit with automated tools\n2. Test authentication system with various scenarios\n3. Verify authorization controls work correctly\n4. Test encryption implementation\n5. Perform penetration testing\n6. Verify rate limiting effectiveness\n7. Test with security scanning tools (OWASP ZAP, etc.)",
+        "priority": "high",
+        "dependencies": [
+          1,
+          5
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Implement Secure Authentication System",
+            "description": "Develop and configure a robust authentication system using JWTs, bcrypt for password hashing, and multi-factor authentication. Ensure secure session management and token expiration policies.",
+            "dependencies": [],
+            "details": "Use Passport.js or a similar library for authentication. Store passwords securely with bcrypt. Implement JWT-based authentication with strict expiration times and validate token usage and claims. Add multi-factor authentication and manage session timeouts.",
+            "status": "pending",
+            "testStrategy": "Test login, logout, and session expiration. Validate JWT signature, claims, and expiration. Attempt brute-force and replay attacks to verify resilience."
+          },
+          {
+            "id": 2,
+            "title": "Establish Authorization and Access Controls",
+            "description": "Set up role-based access control (RBAC) and resource-level permissions to restrict access to API endpoints and resources based on user roles.",
+            "dependencies": [
+              1
+            ],
+            "details": "Integrate CASL or a similar library for RBAC. Define roles and permissions for all resources. Protect API endpoints by enforcing authorization checks.",
+            "status": "pending",
+            "testStrategy": "Verify that users can only access resources permitted by their roles. Attempt privilege escalation and unauthorized access scenarios."
+          },
+          {
+            "id": 3,
+            "title": "Implement Data Encryption Mechanisms",
+            "description": "Apply encryption for data at rest and in transit, including database encryption, TLS for communications, API key encryption, and content encryption.",
+            "dependencies": [
+              1
+            ],
+            "details": "Enable database encryption at rest. Configure TLS for all client-server communications. Encrypt API keys and sensitive content before storage or transmission.",
+            "status": "pending",
+            "testStrategy": "Check that all sensitive data is encrypted at rest and in transit. Use tools to inspect network traffic and database storage for plaintext data."
+          },
+          {
+            "id": 4,
+            "title": "Apply Security Best Practices and Protections",
+            "description": "Implement input validation, CSRF protection, rate limiting, and security headers to defend against common web vulnerabilities.",
+            "dependencies": [
+              1,
+              2,
+              3
+            ],
+            "details": "Use Helmet.js for security headers (CSP, HSTS, etc.). Apply express-rate-limit for rate limiting. Validate and sanitize all user inputs. Enable CSRF protection.",
+            "status": "pending",
+            "testStrategy": "Run automated security scans and penetration tests. Attempt injection, CSRF, and rate-limiting bypass attacks."
+          },
+          {
+            "id": 5,
+            "title": "Conduct Regular Security Audits and Monitoring",
+            "description": "Establish a process for ongoing security audits, vulnerability assessments, and monitoring to ensure continued protection and compliance.",
+            "dependencies": [
+              4
+            ],
+            "details": "Schedule regular code reviews and security audits. Monitor logs for suspicious activity. Update dependencies and patch vulnerabilities promptly.",
+            "status": "pending",
+            "testStrategy": "Review audit logs and reports. Simulate incident response scenarios. Verify that vulnerabilities are identified and remediated in a timely manner."
+          }
+        ]
+      },
+      {
+        "id": 20,
+        "title": "System Integration and End-to-End Testing",
+        "description": "Perform comprehensive system integration and end-to-end testing to ensure all components work together seamlessly and meet the requirements specified in the PRD.",
+        "details": "1. Develop end-to-end test scenarios:\n   - Content capture from browser to storage\n   - Content processing and classification\n   - Digest generation and delivery\n   - Search and filter functionality\n   - Configuration changes propagation\n\n2. Implement automated end-to-end tests:\n   - Use Cypress, Playwright, or similar\n   - Create test fixtures and mocks\n   - Test all major user flows\n   - Verify system performance under load\n\n3. Perform manual testing:\n   - Usability testing with real users\n   - Edge case testing\n   - Cross-browser and cross-device testing\n   - Accessibility testing\n\n4. Verify PRD requirements:\n   - Check all core features against requirements\n   - Verify technical requirements are met\n   - Validate success metrics\n\n5. Create deployment pipeline:\n   - Automated testing before deployment\n   - Staged rollout process\n   - Rollback capability\n   - Monitoring during deployment\n\nTechnologies:\n- Cypress or Playwright for end-to-end testing\n- Jest for unit and integration testing\n- GitHub Actions or similar for CI/CD\n- Load testing with k6 or similar\n- Accessibility testing with axe or similar",
+        "testStrategy": "1. Run comprehensive test suite covering all features\n2. Verify system meets all PRD requirements\n3. Test with real-world usage patterns\n4. Verify system performance under load\n5. Test recovery from failures\n6. Perform accessibility compliance testing\n7. Validate all success metrics are achievable",
+        "priority": "high",
+        "dependencies": [
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Define System Integration and End-to-End Test Plan",
+            "description": "Develop a comprehensive test plan outlining the scope, objectives, resources, and schedule for system integration and end-to-end testing. Specify the integrated components, interfaces, and test environment setup.",
+            "dependencies": [],
+            "details": "Document the roles and interactions of each system component, entry and exit criteria, and the overall testing approach. Include hardware and software requirements for the test environment.",
+            "status": "pending",
+            "testStrategy": "Review and approval of the test plan by stakeholders; ensure alignment with PRD requirements and project goals."
+          },
+          {
+            "id": 2,
+            "title": "Develop Test Scenarios and Test Cases",
+            "description": "Create detailed end-to-end test scenarios and test cases covering all major user flows, component interactions, and system requirements as specified in the PRD.",
+            "dependencies": [
+              1
+            ],
+            "details": "Include scenarios for content capture, processing, classification, digest generation, delivery, search, filter, and configuration changes. Prepare both positive and negative test cases.",
+            "status": "pending",
+            "testStrategy": "Peer review of test cases for completeness and traceability to requirements."
+          },
+          {
+            "id": 3,
+            "title": "Implement Automated and Manual Testing",
+            "description": "Execute automated and manual tests based on the developed scenarios and cases, using tools such as Cypress, Playwright, and accessibility testing frameworks.",
+            "dependencies": [
+              2
+            ],
+            "details": "Set up test fixtures, mocks, and data. Perform usability, edge case, cross-browser, cross-device, and accessibility testing. Run automated tests for all major flows and performance/load testing.",
+            "status": "pending",
+            "testStrategy": "Continuous integration runs for automated tests; manual test execution logs and defect tracking."
+          },
+          {
+            "id": 4,
+            "title": "Validate System Against PRD Requirements",
+            "description": "Verify that all integrated system features and technical requirements meet the specifications and success metrics defined in the PRD.",
+            "dependencies": [
+              3
+            ],
+            "details": "Map test results to PRD requirements, document any deviations or defects, and ensure all acceptance criteria are satisfied.",
+            "status": "pending",
+            "testStrategy": "Requirement traceability matrix and stakeholder sign-off on validation results."
+          },
+          {
+            "id": 5,
+            "title": "Establish Deployment Pipeline with Quality Gates",
+            "description": "Create and configure a deployment pipeline that incorporates automated testing, staged rollout, rollback capabilities, and monitoring to ensure quality and stability during deployment.",
+            "dependencies": [
+              4
+            ],
+            "details": "Integrate CI/CD tools (e.g., GitHub Actions), set up automated test execution before deployment, and implement monitoring and rollback mechanisms.",
+            "status": "pending",
+            "testStrategy": "Pipeline dry runs, monitoring of deployment metrics, and validation of rollback procedures."
+          }
+        ]
+      }
+    ],
+    "metadata": {
+      "created": "2025-06-17T02:50:16.005Z",
+      "updated": "2025-06-17T02:50:16.006Z",
+      "description": "Tasks for master context"
+    }
+  }
+}
