@@ -1,0 +1,132 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains an expression index which requires additional setup for migrations. Visit https://pris.ly/d/expression-indexes for more info.
+model content_items {
+  id                  Int                     @id @default(autoincrement())
+  url                 String
+  title               String
+  content_type        content_type_enum       @default(article)
+  category            content_category_enum?
+  captured_at         DateTime?               @default(now()) @db.Timestamptz(6)
+  processed_at        DateTime?               @db.Timestamptz(6)
+  source_domain       String                  @db.VarChar(255)
+  raw_content         String?
+  content_hash        String?                 @db.VarChar(64)
+  metadata            Json?                   @default("{}")
+  processing_status   processing_status_enum? @default(pending)
+  ai_confidence_score Decimal?                @db.Decimal(3, 2)
+  manual_override     Boolean?                @default(false)
+  created_at          DateTime?               @default(now()) @db.Timestamptz(6)
+  updated_at          DateTime?               @default(now()) @db.Timestamptz(6)
+  political_analysis  political_analysis?
+  processing_logs     processing_logs[]
+
+  @@index([captured_at(sort: Desc)], map: "idx_content_items_captured_at")
+  @@index([processing_status], map: "idx_content_items_processing_status")
+  @@index([source_domain], map: "idx_content_items_source_domain")
+}
+
+model daily_digests {
+  id                    Int       @id @default(autoincrement())
+  digest_date           DateTime  @unique @db.Date
+  content_items_count   Int?      @default(0)
+  political_items_count Int?      @default(0)
+  topic_clusters        Json?     @default("[]")
+  digest_markdown       String?
+  digest_html           String?
+  digest_audio_path     String?
+  email_sent_at         DateTime? @db.Timestamptz(6)
+  generation_duration   Int?
+  created_at            DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at            DateTime? @default(now()) @db.Timestamptz(6)
+
+  @@index([digest_date(sort: Desc)], map: "idx_daily_digests_date")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model political_analysis {
+  id                Int              @id @default(autoincrement())
+  content_id        Int              @unique
+  bias_score        Decimal?         @db.Decimal(3, 2)
+  bias_confidence   Decimal?         @db.Decimal(3, 2)
+  bias_label        bias_label_enum?
+  quality_score     Int?
+  credibility_score Decimal?         @db.Decimal(3, 1)
+  loaded_language   Json?            @default("[]")
+  implications      String?
+  summary_executive String?
+  summary_detailed  String?
+  key_points        Json?            @default("[]")
+  processing_model  String?          @db.VarChar(50)
+  created_at        DateTime?        @default(now()) @db.Timestamptz(6)
+  updated_at        DateTime?        @default(now()) @db.Timestamptz(6)
+  content_items     content_items    @relation(fields: [content_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([bias_score], map: "idx_political_analysis_bias_score")
+  @@index([content_id], map: "idx_political_analysis_content_id")
+  @@index([quality_score(sort: Desc)], map: "idx_political_analysis_quality_score")
+}
+
+model processing_logs {
+  id                 Int            @id @default(autoincrement())
+  content_id         Int?
+  operation          String         @db.VarChar(50)
+  status             String         @db.VarChar(20)
+  model_used         String?        @db.VarChar(50)
+  processing_time_ms Int?
+  error_message      String?
+  created_at         DateTime?      @default(now()) @db.Timestamptz(6)
+  content_items      content_items? @relation(fields: [content_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([content_id], map: "idx_processing_logs_content_id")
+  @@index([created_at(sort: Desc)], map: "idx_processing_logs_created_at")
+  @@index([status, operation], map: "idx_processing_logs_status_operation")
+}
+
+model user_settings {
+  id                  Int       @id @default(autoincrement())
+  user_id             String?   @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  digest_time         DateTime? @default(dbgenerated("'07:00:00'::time without time zone")) @db.Time(6)
+  digest_frequency    String?   @default("daily") @db.VarChar(20)
+  email_address       String?   @db.VarChar(255)
+  email_enabled       Boolean?  @default(true)
+  tts_enabled         Boolean?  @default(false)
+  ai_model_preference String?   @default("gemini") @db.VarChar(50)
+  content_filters     Json?     @default("{}")
+  created_at          DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at          DateTime? @default(now()) @db.Timestamptz(6)
+}
+
+enum bias_label_enum {
+  left
+  center
+  right
+}
+
+enum content_category_enum {
+  US_Politics_News
+  General
+}
+
+enum content_type_enum {
+  article
+  video
+  post
+  other
+}
+
+enum processing_status_enum {
+  pending
+  processing
+  completed
+  failed
+  manual_review
+}
