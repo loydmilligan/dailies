@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Dailies Content Curator</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="container">
+    <header class="header">
+      <div class="brand-container">
+        <div class="logo-wrapper">
+          <img src="../icons/icon48.png" alt="Dailies" class="logo">
+          <div class="logo-badge">D</div>
+        </div>
+        <div class="brand-text">
+          <h1 class="brand-name">Dailies</h1>
+          <span class="brand-tagline">Content Curator</span>
+        </div>
+      </div>
+    </header>
+    
+    <main class="main">
+      <button id="capture-btn" class="capture-button">
+        <span class="capture-icon">📄</span>
+        <span class="capture-text">Capture This Page</span>
+      </button>
+      
+      <div class="status" id="status">
+        <span class="status-text">Ready to capture</span>
+      </div>
+      
+      <div class="page-info" id="page-info">
+        <div class="page-title" id="page-title">Loading...</div>
+        <div class="page-url" id="page-url"></div>
+      </div>
+    </main>
+    
+    <footer class="footer">
+      <button id="options-btn" class="options-button">Settings</button>
+      <span class="version" id="version">v1.0.0</span>
+    </footer>
+  </div>
+  
+  <script src="popup.js"></script>
+</body>
+</html>

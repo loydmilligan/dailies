@@ -1,0 +1,66 @@
+{
+  "manifest_version": 3,
+  "name": "Dailies Content Curator",
+  "version": "1.0.0",
+  "description": "Intelligent one-click content capture and curation for personalized daily digests",
+  
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "dailies@contentcurator.dev",
+      "strict_min_version": "109.0"
+    }
+  },
+  
+  "permissions": [
+    "activeTab",
+    "scripting",
+    "storage",
+    "contextMenus"
+  ],
+  
+  "host_permissions": [
+    "http://localhost:3000/*",
+    "https://www.youtube.com/*",
+    "https://youtube.com/*"
+  ],
+  
+  "background": {
+    "scripts": ["background/service-worker.js"]
+  },
+  
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content/content-script.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  
+  "web_accessible_resources": [
+    {
+      "resources": ["lib/readability.js"],
+      "matches": ["<all_urls>"]
+    }
+  ],
+  
+  "action": {
+    "default_popup": "popup/popup.html",
+    "default_title": "Capture Content with Dailies",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  
+  "options_ui": {
+    "page": "options/options.html",
+    "open_in_tab": true
+  },
+  
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}

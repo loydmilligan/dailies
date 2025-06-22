@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="A test article for validating Dailies content extraction capabilities">
+    <meta name="author" content="Test Author">
+    <meta property="article:published_time" content="2024-01-15T10:30:00Z">
+    <title>Test Article: Dailies Content Extraction</title>
+</head>
+<body>
+    <header>
+        <h1>Test Article: Dailies Content Extraction</h1>
+        <div class="byline">By Test Author | January 15, 2024</div>
+    </header>
+    
+    <main>
+        <article>
+            <p>This is a test article designed to validate the content extraction capabilities of the Dailies Chrome extension. The article contains various elements that should be properly extracted and parsed.</p>
+            
+            <h2>Key Features Being Tested</h2>
+            <ul>
+                <li><strong>Readability.js Integration:</strong> Clean article content extraction</li>
+                <li><strong>Metadata Extraction:</strong> Author, title, description, and publish date</li>
+                <li><strong>Content Type Detection:</strong> Automatic classification as 'article'</li>
+                <li><strong>Text Selection:</strong> Ability to capture selected text with context</li>
+            </ul>
+            
+            <h2>Sample Content for Testing</h2>
+            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+            
+            <p>Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+            
+            <blockquote>
+                <p>"This is a test quote that should be preserved in the extracted content."</p>
+            </blockquote>
+            
+            <h3>Technical Implementation</h3>
+            <p>The content extraction system uses Mozilla's Readability.js library to parse article content, removing ads, navigation, and other non-essential elements while preserving the core article text and structure.</p>
+            
+            <p>Additional features include:</p>
+            <ol>
+                <li>Automatic content type detection based on URL patterns and page structure</li>
+                <li>Metadata extraction from meta tags and structured data</li>
+                <li>Word count and reading time estimation</li>
+                <li>Content hash generation for deduplication</li>
+                <li>Selected text capture with surrounding context</li>
+            </ol>
+        </article>
+    </main>
+    
+    <footer>
+        <p>© 2024 Dailies Test Content. This page is for testing purposes only.</p>
+    </footer>
+    
+    <script>
+        // Add some dynamic content for testing
+        console.log('Test page loaded for Dailies content extraction');
+        
+        // Simulate article metadata
+        const metadata = {
+            wordCount: document.body.textContent.split(/\s+/).length,
+            readingTime: Math.ceil(document.body.textContent.split(/\s+/).length / 200)
+        };
+        
+        console.log('Article metadata:', metadata);
+    </script>
+</body>
+</html>

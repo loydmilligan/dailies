@@ -1,0 +1,58 @@
+{
+  "manifest_version": 3,
+  "name": "Dailies Content Curator",
+  "version": "1.0.0",
+  "description": "One-click content capture for the Dailies content curation system",
+  
+  "permissions": [
+    "activeTab",
+    "scripting",
+    "storage",
+    "contextMenus"
+  ],
+  
+  "host_permissions": [
+    "http://localhost:3000/*",
+    "http://localhost:*/*",
+    "https://localhost:*/*",
+    "https://www.youtube.com/*",
+    "https://youtube.com/*"
+  ],
+  
+  "background": {
+    "service_worker": "background/service-worker.js"
+  },
+  
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content/content-script.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  
+  "web_accessible_resources": [
+    {
+      "resources": ["lib/readability.js"],
+      "matches": ["<all_urls>"]
+    }
+  ],
+  
+  "action": {
+    "default_popup": "popup/popup.html",
+    "default_title": "Capture Content",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  
+  "options_page": "options/options.html",
+  
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}

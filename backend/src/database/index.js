@@ -33,27 +33,43 @@ class DatabaseService {
     }
   }
 
+  async testConnection() {
+    await this.prisma.$queryRaw`SELECT 1`;
+  }
+
   // Content operations
   async createContentItem(data) {
     return await this.prisma.content_items.create({ data });
   }
 
   async getContentItems(options = {}) {
-    const { take = 50, skip = 0, category, status, orderBy = { captured_at: 'desc' } } = options;
+    const { page = 1, limit = 20, filters = {} } = options;
+    const skip = (page - 1) * limit;
     
     const where = {};
-    if (category) where.category = category;
-    if (status) where.processing_status = status;
+    if (filters.category) where.category = filters.category;
+    if (filters.content_type) where.content_type = filters.content_type;
+    if (filters.status) where.processing_status = filters.status;
 
-    return await this.prisma.content_items.findMany({
-      where,
-      take,
-      skip,
-      orderBy,
-      include: {
-        political_analysis: true
-      }
-    });
+    const [items, total] = await Promise.all([
+      this.prisma.content_items.findMany({
+        where,
+        take: limit,
+        skip,
+        orderBy: { captured_at: 'desc' },
+        include: {
+          political_analysis: true
+        }
+      }),
+      this.prisma.content_items.count({ where })
+    ]);
+
+    return {
+      items,
+      total,
+      page,
+      limit
+    };
   }
 
   async getContentItemById(id, includeAnalysis = true) {
@@ -63,6 +79,12 @@ class DatabaseService {
         political_analysis: includeAnalysis,
         processing_logs: true
       }
+    });
+  }
+
+  async getContentByHash(contentHash) {
+    return await this.prisma.content_items.findFirst({
+      where: { content_hash: contentHash }
     });
   }
 
@@ -89,10 +111,41 @@ class DatabaseService {
     return await this.prisma.daily_digests.create({ data });
   }
 
-  async getDailyDigest(date) {
+  async getDailyDigestByDate(date) {
     return await this.prisma.daily_digests.findUnique({
       where: { digest_date: date }
     });
+  }
+
+  async getDailyDigests(options = {}) {
+    const { page = 1, limit = 20, filters = {} } = options;
+    const skip = (page - 1) * limit;
+
+    const where = {};
+    if (filters.startDate) where.digest_date = { gte: new Date(filters.startDate) };
+    if (filters.endDate) {
+      where.digest_date = { 
+        ...where.digest_date,
+        lte: new Date(filters.endDate) 
+      };
+    }
+
+    const [items, total] = await Promise.all([
+      this.prisma.daily_digests.findMany({
+        where,
+        take: limit,
+        skip,
+        orderBy: { digest_date: 'desc' }
+      }),
+      this.prisma.daily_digests.count({ where })
+    ]);
+
+    return {
+      items,
+      total,
+      page,
+      limit
+    };
   }
 
   async getRecentDigests(limit = 10) {
@@ -111,6 +164,40 @@ class DatabaseService {
     return await this.prisma.user_settings.update({
       where: { id },
       data
+    });
+  }
+
+  // User management
+  async createUser(data) {
+    return await this.prisma.users.create({ data });
+  }
+
+  async getUserById(id) {
+    return await this.prisma.users.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        role: true,
+        preferences: true,
+        created_at: true,
+        last_login: true,
+        status: true
+      }
+    });
+  }
+
+  async getUserByEmail(email) {
+    return await this.prisma.users.findUnique({
+      where: { email }
+    });
+  }
+
+  async updateUserLastLogin(userId) {
+    return await this.prisma.users.update({
+      where: { id: userId },
+      data: { last_login: new Date() }
     });
   }
 
@@ -150,7 +237,8 @@ class DatabaseService {
   }
 
   async searchContent(query, options = {}) {
-    const { category, limit = 50 } = options;
+    const { page = 1, limit = 20, filters = {} } = options;
+    const skip = (page - 1) * limit;
     
     const where = {
       OR: [
@@ -159,16 +247,28 @@ class DatabaseService {
       ]
     };
 
-    if (category) where.category = category;
+    if (filters.category) where.category = filters.category;
+    if (filters.content_type) where.content_type = filters.content_type;
 
-    return await this.prisma.content_items.findMany({
-      where,
-      take: limit,
-      include: {
-        political_analysis: true
-      },
-      orderBy: { captured_at: 'desc' }
-    });
+    const [items, total] = await Promise.all([
+      this.prisma.content_items.findMany({
+        where,
+        take: limit,
+        skip,
+        include: {
+          political_analysis: true
+        },
+        orderBy: { captured_at: 'desc' }
+      }),
+      this.prisma.content_items.count({ where })
+    ]);
+
+    return {
+      items,
+      total,
+      page,
+      limit
+    };
   }
 
   // Transaction support

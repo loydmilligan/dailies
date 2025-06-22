@@ -144,15 +144,15 @@
         "dependencies": [
           2
         ],
-        "status": "pending",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
             "title": "Set Up Chrome Extension Project Structure with Manifest V3",
             "description": "Initialize the Chrome extension project, create the manifest.json file compliant with Manifest V3, and set up the required directories and files for background service worker, popup, options page, and content scripts.",
             "dependencies": [],
-            "details": "Ensure manifest.json includes permissions for tabs, scripting, storage, and host permissions for content capture. Set up the service worker, popup UI, and options page scaffolding.",
-            "status": "pending",
+            "details": "Ensure manifest.json includes permissions for tabs, scripting, storage, and host permissions for content capture. Set up the service worker, popup UI, and options page scaffolding.\n<info added on 2025-06-19T05:45:21.040Z>\nExtension project structure successfully implemented with all core components working correctly. Chrome Developer Mode testing confirms:\n\n- Extension loads without errors in chrome://extensions/\n- Browser action button appears in toolbar and functions properly\n- Popup interface displays correctly with capture button\n- Options page accessible with configuration fields for backend URL and API key\n- Context menu integration working for page and selection capture\n- Service worker running without console errors\n- Basic content type detection implemented\n- Chrome storage integration functional\n\nManifest V3 compliant structure includes manifest.json with required permissions (tabs, scripting, storage, host), background service worker with message handling, popup UI, options page, content script placeholder, context menu integration, and basic icon files. Foundation is ready for content extraction implementation in subtask 3.2.\n</info added on 2025-06-19T05:45:21.040Z>",
+            "status": "done",
             "testStrategy": "Load the unpacked extension in Chrome and verify that the extension installs without errors and all components (browser action, options page) are accessible."
           },
           {
@@ -163,7 +163,7 @@
               1
             ],
             "details": "Use content scripts to extract document.documentElement.outerHTML, page metadata, and selected text. For YouTube, extract video ID and fetch transcript via YouTube API. Integrate Readability.js for article parsing.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Test content capture on various web pages, including articles, YouTube videos, and social media posts. Validate extracted data structure and completeness."
           },
           {
@@ -174,7 +174,7 @@
               2
             ],
             "details": "Develop a toast notification component injected into the page DOM upon successful capture. Ensure it auto-dismisses and does not interfere with page interaction.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Trigger captures and verify that the toast notification appears, displays correct information, and disappears as expected across different sites."
           },
           {
@@ -185,7 +185,7 @@
               2
             ],
             "details": "Store and use JWT tokens securely. Handle API errors gracefully and implement exponential backoff for retries. Ensure all sensitive data is transmitted securely.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Simulate network failures and invalid tokens to verify error handling and retry logic. Confirm successful data transmission and authentication with the backend."
           },
           {
@@ -196,7 +196,7 @@
               2
             ],
             "details": "Implement logic to detect and process various content types. Add a context menu item that triggers capture of selected text and integrates with the main capture workflow.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Test the extension on diverse content types and verify context menu functionality. Ensure correct handling and extraction for each supported type."
           }
         ]
@@ -211,7 +211,7 @@
         "dependencies": [
           2
         ],
-        "status": "pending",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -219,7 +219,7 @@
             "description": "Initialize the Firefox extension project structure using Manifest V3, ensuring compatibility with Firefox-specific requirements and differences from Chrome.",
             "dependencies": [],
             "details": "Create the manifest.json file with appropriate permissions, background scripts, browser action, and context menu definitions. Address Firefox-specific Manifest V3 nuances, such as host permissions and web accessible resources.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Verify extension loads in Firefox, manifest is valid, and browser action/context menu appear as expected."
           },
           {
@@ -230,7 +230,7 @@
               1
             ],
             "details": "Use content scripts to extract document HTML, metadata (title, URL, timestamp, domain), and for YouTube, extract video ID and fetch transcript via YouTube API. Integrate Readability.js for article extraction.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Test capture on various content types (articles, videos, social media), validate extracted data structure and accuracy."
           },
           {
@@ -241,7 +241,7 @@
               2
             ],
             "details": "Develop a lightweight notification system triggered after content capture, ensuring it overlays correctly and disappears automatically.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Trigger captures and confirm the toast appears, displays correct information, and auto-dismisses without blocking user interaction."
           },
           {
@@ -252,7 +252,7 @@
               2
             ],
             "details": "Send captured content to backend API with JWT tokens, handle errors gracefully, and implement retry mechanism for transient failures.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Simulate network/API failures, verify retries and error handling, and confirm successful authenticated requests."
           },
           {
@@ -263,7 +263,7 @@
               1
             ],
             "details": "Allow users to configure backend API endpoints, authentication tokens, and UI preferences. Store settings using Firefox extension storage APIs.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Change settings via options page, reload extension, and verify persistence and correct application of user preferences."
           }
         ]
@@ -278,7 +278,7 @@
         "dependencies": [
           2
         ],
-        "status": "pending",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -286,7 +286,7 @@
             "description": "Initialize a Node.js project, install Express, and define all required RESTful API endpoints for content and digest management.",
             "dependencies": [],
             "details": "Set up the project directory, initialize with npm, install Express, and create the main server file. Implement the following endpoints: POST /api/content, GET /api/content, GET /api/content/:id, PUT /api/content/:id, GET /api/digests, GET /api/digests/:date.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Verify that each endpoint responds with the correct status code and structure using Postman or curl."
           },
           {
@@ -297,7 +297,7 @@
               1
             ],
             "details": "Integrate JWT for user authentication and authorization. Apply express-rate-limit to sensitive endpoints to prevent excessive requests.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Test endpoints with and without valid JWTs and simulate rapid requests to ensure rate limiting is enforced."
           },
           {
@@ -308,7 +308,7 @@
               2
             ],
             "details": "Implement validation schemas for incoming requests, set up Winston for logging requests and errors, and ensure all errors are handled with appropriate status codes and messages.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Send invalid requests to verify validation and error responses; check logs for correct entries."
           },
           {
@@ -319,7 +319,7 @@
               3
             ],
             "details": "Use Prisma ORM or TypeORM for database operations. Sanitize all user input to prevent XSS and injection attacks. Ensure content is processed and stored securely.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Test with various content payloads, including malicious input, to confirm sanitization and correct database operations."
           },
           {
@@ -330,7 +330,7 @@
               4
             ],
             "details": "Integrate Swagger UI into the project and document each endpoint, including parameters, responses, and security schemes.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Access the Swagger UI and verify that all endpoints are documented and interactive for testing."
           }
         ]
@@ -345,7 +345,7 @@
         "dependencies": [
           5
         ],
-        "status": "pending",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -353,7 +353,7 @@
             "description": "Establish and configure API clients for Gemini (primary), OpenAI (fallback), and Anthropic (secondary fallback) to enable content classification requests.",
             "dependencies": [],
             "details": "Implement authentication, environment variable management for API keys, and ensure connectivity for all three providers. Validate that each client can send and receive test requests.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Verify successful connection and response from each API using sample prompts. Confirm error handling for invalid credentials."
           },
           {
@@ -364,7 +364,7 @@
               1
             ],
             "details": "Design a function to parse incoming content objects, extract necessary fields, and format prompts compatible with each API's requirements.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Test extraction and prompt formatting with diverse content samples, ensuring correct and consistent prompt structure."
           },
           {
@@ -375,7 +375,7 @@
               2
             ],
             "details": "Parse model responses, extract classification labels, and compute confidence scores using model-provided probabilities or custom logic.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Validate correct parsing and scoring with mock and real API responses, ensuring accuracy and reliability."
           },
           {
@@ -386,7 +386,7 @@
               3
             ],
             "details": "Create a robust fallback sequence and error handling to ensure classification attempts all available APIs before manual intervention.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Simulate API failures and low-confidence scenarios to confirm correct fallback and manual review triggers."
           },
           {
@@ -397,7 +397,7 @@
               4
             ],
             "details": "Design cache keys, set appropriate expiration policies, and ensure cache is checked before making classification requests.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Test cache hits and misses, validate cache invalidation, and measure reduction in redundant API calls."
           }
         ]
@@ -412,7 +412,7 @@
         "dependencies": [
           6
         ],
-        "status": "pending",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -420,7 +420,7 @@
             "description": "Architect the end-to-end pipeline for processing political content, including modules for bias detection, quality scoring, loaded language identification, and source credibility assessment.",
             "dependencies": [],
             "details": "Define the data flow, interfaces, and integration points for each analysis component. Specify input/output formats and ensure compatibility with NLP libraries and external APIs.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Review pipeline architecture with stakeholders and validate module integration using sample political content."
           },
           {
@@ -431,7 +431,7 @@
               1
             ],
             "details": "Leverage pre-trained bias detection models and NLP techniques to classify content bias. Develop a scoring algorithm that evaluates writing quality, fact density, and citation analysis.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Test modules on a labeled dataset of political articles and compare results to human annotations."
           },
           {
@@ -442,7 +442,7 @@
               1
             ],
             "details": "Use linguistic analysis to flag emotionally charged or biased terms. Integrate a regularly updated source credibility database to score domains.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Validate loaded language detection against benchmark datasets and verify source credibility scores with known reputable and non-reputable sources."
           },
           {
@@ -454,7 +454,7 @@
               3
             ],
             "details": "Utilize advanced NLP models (e.g., Gemini API) to produce multi-level summaries and extract key points. Ensure summaries reflect detected bias, quality, and credibility findings.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Evaluate summary outputs for accuracy, coverage, and readability using a set of diverse political articles."
           },
           {
@@ -467,7 +467,7 @@
               4
             ],
             "details": "Expose a unified interface for all analysis functions, ensuring modularity and scalability. Document API methods and expected outputs.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Perform end-to-end tests using real-world political content and validate outputs for each method against expected results."
           }
         ]
@@ -482,7 +482,7 @@
         "dependencies": [
           6
         ],
-        "status": "pending",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -490,7 +490,7 @@
             "description": "Define a minimal JSON schema for general content storage, ensuring inclusion of essential metadata fields for search and deduplication.",
             "dependencies": [],
             "details": "Specify required fields such as id, url, title, sourceDomain, contentType, captureTimestamp, summary, keywords, readingTime, and contentHash. Ensure the structure is optimized for storage and retrieval with minimal overhead.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Validate the schema using sample content and check compliance with JSON standards and project requirements."
           },
           {
@@ -501,7 +501,7 @@
               1
             ],
             "details": "Create robust parsers to reliably extract and populate metadata fields from various content types.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Test extraction on a diverse set of content samples to ensure accuracy and completeness."
           },
           {
@@ -512,7 +512,7 @@
               2
             ],
             "details": "Ensure all processing is lightweight and does not rely on external AI APIs. Integrate extractive summarization, TF-IDF keyword extraction, reading time calculation, and content hashing.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Benchmark processing speed and verify output quality for each algorithm using test content."
           },
           {
@@ -523,7 +523,7 @@
               3
             ],
             "details": "Implement methods: process(contentId), generateSummary(content), extractKeywords(content), calculateReadingTime(content), and ensure seamless integration with the JSON structure.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Unit test each method and perform integration tests to confirm correct end-to-end processing."
           },
           {
@@ -534,7 +534,7 @@
               4
             ],
             "details": "Optimize database schema for JSON storage, implement indexing for searchable fields, and validate retrieval performance.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Load test storage and retrieval operations, and verify search accuracy and speed with realistic data volumes."
           }
         ]
@@ -1234,7 +1234,7 @@
           1,
           5
         ],
-        "status": "pending",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -1242,7 +1242,7 @@
             "description": "Develop and configure a robust authentication system using JWTs, bcrypt for password hashing, and multi-factor authentication. Ensure secure session management and token expiration policies.",
             "dependencies": [],
             "details": "Use Passport.js or a similar library for authentication. Store passwords securely with bcrypt. Implement JWT-based authentication with strict expiration times and validate token usage and claims. Add multi-factor authentication and manage session timeouts.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Test login, logout, and session expiration. Validate JWT signature, claims, and expiration. Attempt brute-force and replay attacks to verify resilience."
           },
           {
@@ -1253,7 +1253,7 @@
               1
             ],
             "details": "Integrate CASL or a similar library for RBAC. Define roles and permissions for all resources. Protect API endpoints by enforcing authorization checks.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Verify that users can only access resources permitted by their roles. Attempt privilege escalation and unauthorized access scenarios."
           },
           {
@@ -1264,7 +1264,7 @@
               1
             ],
             "details": "Enable database encryption at rest. Configure TLS for all client-server communications. Encrypt API keys and sensitive content before storage or transmission.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Check that all sensitive data is encrypted at rest and in transit. Use tools to inspect network traffic and database storage for plaintext data."
           },
           {
@@ -1277,7 +1277,7 @@
               3
             ],
             "details": "Use Helmet.js for security headers (CSP, HSTS, etc.). Apply express-rate-limit for rate limiting. Validate and sanitize all user inputs. Enable CSRF protection.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Run automated security scans and penetration tests. Attempt injection, CSRF, and rate-limiting bypass attacks."
           },
           {
@@ -1288,7 +1288,7 @@
               4
             ],
             "details": "Schedule regular code reviews and security audits. Monitor logs for suspicious activity. Update dependencies and patch vulnerabilities promptly.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Review audit logs and reports. Simulate incident response scenarios. Verify that vulnerabilities are identified and remediated in a timely manner."
           }
         ]
@@ -1379,7 +1379,7 @@
     ],
     "metadata": {
       "created": "2025-06-17T02:50:16.005Z",
-      "updated": "2025-06-19T05:05:34.591Z",
+      "updated": "2025-06-22T07:49:44.242Z",
       "description": "Tasks for master context"
     }
   }

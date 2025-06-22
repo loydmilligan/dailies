@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background circle -->
+  <circle cx="64" cy="64" r="60" fill="#1a1a2e" stroke="#16213e" stroke-width="2"/>
+  
+  <!-- Ringmaster figure -->
+  <g transform="translate(64, 64)">
+    <!-- Head -->
+    <circle cx="0" cy="-25" r="12" fill="#f4d1a6" stroke="#d4a574" stroke-width="1"/>
+    
+    <!-- Top hat -->
+    <rect x="-8" y="-42" width="16" height="18" fill="#2c2c54" stroke="#1a1a2e" stroke-width="1"/>
+    <ellipse cx="0" cy="-24" rx="10" ry="3" fill="#2c2c54" stroke="#1a1a2e" stroke-width="1"/>
+    
+    <!-- Hat band -->
+    <rect x="-8" y="-32" width="16" height="3" fill="#e74c3c"/>
+    
+    <!-- Face features -->
+    <circle cx="-3" cy="-27" r="1.5" fill="#2c3e50"/>
+    <circle cx="3" cy="-27" r="1.5" fill="#2c3e50"/>
+    <path d="M -3,-22 Q 0,-20 3,-22" stroke="#c0392b" stroke-width="1.5" fill="none"/>
+    
+    <!-- Mustache -->
+    <path d="M -5,-24 Q 0,-22 5,-24" stroke="#2c2c54" stroke-width="2" fill="none"/>
+    
+    <!-- Body (coat) -->
+    <path d="M -12,-13 Q -12,-8 -8,5 L -6,22 L 6,22 L 8,5 Q 12,-8 12,-13 Z" fill="#c0392b" stroke="#a93226" stroke-width="1"/>
+    
+    <!-- Coat buttons -->
+    <circle cx="0" cy="-5" r="1.5" fill="#f39c12"/>
+    <circle cx="0" cy="2" r="1.5" fill="#f39c12"/>
+    <circle cx="0" cy="9" r="1.5" fill="#f39c12"/>
+    
+    <!-- Bow tie -->
+    <path d="M -4,-15 L -2,-13 L -4,-11 L 4,-11 L 2,-13 L 4,-15 Z" fill="#2c3e50"/>
+    <rect x="-1" y="-15" width="2" height="4" fill="#34495e"/>
+    
+    <!-- Arms -->
+    <ellipse cx="-15" cy="-5" rx="3" ry="8" fill="#c0392b" stroke="#a93226" stroke-width="1"/>
+    <ellipse cx="15" cy="-5" rx="3" ry="8" fill="#c0392b" stroke="#a93226" stroke-width="1"/>
+    
+    <!-- Left hand (holding whip handle) -->
+    <circle cx="-18" cy="3" r="3" fill="#f4d1a6" stroke="#d4a574" stroke-width="1"/>
+    
+    <!-- Whip handle -->
+    <rect x="-20" y="1" width="4" height="8" fill="#8b4513" stroke="#654321" stroke-width="1"/>
+    
+    <!-- Right hand -->
+    <circle cx="18" cy="3" r="3" fill="#f4d1a6" stroke="#d4a574" stroke-width="1"/>
+    
+    <!-- Whip cord - dynamic curved line -->
+    <path d="M -16,6 Q -5,15 5,8 Q 15,2 25,-5 Q 35,-12 40,-20" 
+          stroke="#8b4513" 
+          stroke-width="2" 
+          fill="none" 
+          stroke-linecap="round"/>
+    
+    <!-- Whip tip spark/crack -->
+    <g transform="translate(40, -20)">
+      <path d="M 0,0 L 3,-2 L 1,-1 L 4,-4 L 2,-2 L 5,-6" 
+            stroke="#f39c12" 
+            stroke-width="1.5" 
+            fill="none" 
+            stroke-linecap="round"/>
+      <circle cx="3" cy="-4" r="1" fill="#f39c12" opacity="0.8"/>
+    </g>
+    
+    <!-- Legs -->
+    <rect x="-4" y="22" width="3" height="12" fill="#2c2c54"/>
+    <rect x="1" y="22" width="3" height="12" fill="#2c2c54"/>
+    
+    <!-- Shoes -->
+    <ellipse cx="-2.5" cy="36" rx="4" ry="2" fill="#1a1a2e"/>
+    <ellipse cx="2.5" cy="36" rx="4" ry="2" fill="#1a1a2e"/>
+  </g>
+  
+  <!-- Optional: Subtle glow effect -->
+  <circle cx="64" cy="64" r="58" fill="none" stroke="#3498db" stroke-width="1" opacity="0.3"/>
+</svg>
