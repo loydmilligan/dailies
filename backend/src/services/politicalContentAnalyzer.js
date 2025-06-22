@@ -144,7 +144,7 @@ class PoliticalContentAnalyzer {
   async analyzeBias(content) {
     const prompt = this.constructBiasAnalysisPrompt(content);
     
-    // Try providers in order with fallback
+    // Try providers in order with fallback (Gemini primary for speed/cost)
     const providers = [
       { name: 'gemini', client: this.geminiModel, method: 'analyzeBiasWithGemini' },
       { name: 'openai', client: this.openaiClient, method: 'analyzeBiasWithOpenAI' },
@@ -158,7 +158,7 @@ class PoliticalContentAnalyzer {
     let lastError;
     for (const provider of providers) {
       try {
-        logger.info(`Attempting bias analysis with ${provider.name}`);
+        logger.info(`Attempting bias analysis with ${provider.name}`, { order: providers.indexOf(provider) + 1, total: providers.length });
         const result = await this[provider.method](prompt);
         
         return {
@@ -196,7 +196,7 @@ class PoliticalContentAnalyzer {
   async scoreQuality(content) {
     const prompt = this.constructQualityPrompt(content);
     
-    // Try providers in order with fallback
+    // Try providers in order with fallback (Gemini primary for speed/cost)
     const providers = [
       { name: 'gemini', client: this.geminiModel, method: 'scoreQualityWithGemini' },
       { name: 'openai', client: this.openaiClient, method: 'scoreQualityWithOpenAI' },
@@ -210,7 +210,7 @@ class PoliticalContentAnalyzer {
     let lastError;
     for (const provider of providers) {
       try {
-        logger.info(`Attempting quality scoring with ${provider.name}`);
+        logger.info(`Attempting quality scoring with ${provider.name}`, { order: providers.indexOf(provider) + 1, total: providers.length });
         const result = await this[provider.method](prompt);
         
         return {
@@ -316,7 +316,7 @@ class PoliticalContentAnalyzer {
   async generateSummaries(content) {
     const prompt = this.constructSummaryPrompt(content);
     
-    // Try providers in order with fallback
+    // Try providers in order with fallback (Gemini primary for speed/cost)
     const providers = [
       { name: 'gemini', client: this.geminiModel, method: 'generateSummariesWithGemini' },
       { name: 'openai', client: this.openaiClient, method: 'generateSummariesWithOpenAI' },
@@ -330,7 +330,7 @@ class PoliticalContentAnalyzer {
     let lastError;
     for (const provider of providers) {
       try {
-        logger.info(`Attempting summary generation with ${provider.name}`);
+        logger.info(`Attempting summary generation with ${provider.name}`, { order: providers.indexOf(provider) + 1, total: providers.length });
         const result = await this[provider.method](prompt);
         
         return {
@@ -496,13 +496,20 @@ Respond only with valid JSON.`;
   async analyzeBiasWithGemini(prompt) {
     const result = await this.geminiModel.generateContent(prompt);
     const response = await result.response;
-    const text = response.text().trim();
+    let text = response.text().trim();
+    
+    // Strip markdown code fences if present
+    text = text.replace(/^```json\n?/, '').replace(/\n?```$/, '').trim();
     
     try {
       const parsed = JSON.parse(text);
       return { ...parsed, provider: 'gemini' };
     } catch (error) {
-      logger.warn('Failed to parse Gemini bias response as JSON:', text);
+      logger.warn('Failed to parse Gemini bias response as JSON. Full response:', {
+        prompt: prompt.substring(0, 200) + '...',
+        response: text,
+        error: error.message
+      });
       return this.fallbackBiasParser(text, 'gemini');
     }
   }
@@ -512,11 +519,28 @@ Respond only with valid JSON.`;
    */
   async analyzeBiasWithOpenAI(prompt) {
     const response = await this.openaiClient.chat.completions.create({
-      model: 'gpt-4-turbo-preview',
+      model: 'gpt-4o',
       messages: [{ role: 'user', content: prompt }],
       max_tokens: 300,
-      temperature: 0.1,
-      response_format: { type: "json_object" }
+      temperature: 0,
+      response_format: {
+        type: "json_schema",
+        json_schema: {
+          name: "bias_analysis",
+          strict: true,
+          schema: {
+            type: "object",
+            properties: {
+              biasScore: { type: "number", minimum: -1, maximum: 1 },
+              biasLabel: { type: "string", enum: ["left", "center", "right"] },
+              confidence: { type: "number", minimum: 0, maximum: 1 },
+              reasoning: { type: "string" }
+            },
+            required: ["biasScore", "biasLabel", "confidence", "reasoning"],
+            additionalProperties: false
+          }
+        }
+      }
     });
     
     const text = response.choices[0].message.content.trim();
@@ -562,13 +586,20 @@ Respond only with valid JSON.`;
   async scoreQualityWithGemini(prompt) {
     const result = await this.geminiModel.generateContent(prompt);
     const response = await result.response;
-    const text = response.text().trim();
+    let text = response.text().trim();
+    
+    // Strip markdown code fences if present
+    text = text.replace(/^```json\n?/, '').replace(/\n?```$/, '').trim();
     
     try {
       const parsed = JSON.parse(text);
       return { ...parsed, provider: 'gemini' };
     } catch (error) {
-      logger.warn('Failed to parse Gemini quality response as JSON:', text);
+      logger.warn('Failed to parse Gemini quality response as JSON. Full response:', {
+        prompt: prompt.substring(0, 200) + '...',
+        response: text,
+        error: error.message
+      });
       return this.fallbackQualityParser(text, 'gemini');
     }
   }
@@ -578,11 +609,31 @@ Respond only with valid JSON.`;
    */
   async scoreQualityWithOpenAI(prompt) {
     const response = await this.openaiClient.chat.completions.create({
-      model: 'gpt-4-turbo-preview',
+      model: 'gpt-4o',
       messages: [{ role: 'user', content: prompt }],
       max_tokens: 400,
-      temperature: 0.1,
-      response_format: { type: "json_object" }
+      temperature: 0,
+      response_format: {
+        type: "json_schema",
+        json_schema: {
+          name: "quality_analysis",
+          strict: true,
+          schema: {
+            type: "object",
+            properties: {
+              qualityScore: { type: "integer", minimum: 1, maximum: 10 },
+              reasoning: { type: "string" },
+              factors: { 
+                type: "array", 
+                items: { type: "string" },
+                maxItems: 10
+              }
+            },
+            required: ["qualityScore", "reasoning", "factors"],
+            additionalProperties: false
+          }
+        }
+      }
     });
     
     const text = response.choices[0].message.content.trim();
@@ -628,13 +679,20 @@ Respond only with valid JSON.`;
   async generateSummariesWithGemini(prompt) {
     const result = await this.geminiModel.generateContent(prompt);
     const response = await result.response;
-    const text = response.text().trim();
+    let text = response.text().trim();
+    
+    // Strip markdown code fences if present
+    text = text.replace(/^```json\n?/, '').replace(/\n?```$/, '').trim();
     
     try {
       const parsed = JSON.parse(text);
       return { ...parsed, provider: 'gemini' };
     } catch (error) {
-      logger.warn('Failed to parse Gemini summary response as JSON:', text);
+      logger.warn('Failed to parse Gemini summary response as JSON. Full response:', {
+        prompt: prompt.substring(0, 200) + '...',
+        response: text,
+        error: error.message
+      });
       return this.fallbackSummaryParser(text, 'gemini');
     }
   }
@@ -644,11 +702,33 @@ Respond only with valid JSON.`;
    */
   async generateSummariesWithOpenAI(prompt) {
     const response = await this.openaiClient.chat.completions.create({
-      model: 'gpt-4-turbo-preview',
+      model: 'gpt-4o',
       messages: [{ role: 'user', content: prompt }],
       max_tokens: 800,
-      temperature: 0.2,
-      response_format: { type: "json_object" }
+      temperature: 0,
+      response_format: {
+        type: "json_schema",
+        json_schema: {
+          name: "summary_analysis",
+          strict: true,
+          schema: {
+            type: "object",
+            properties: {
+              executiveSummary: { type: "string", maxLength: 500 },
+              detailedSummary: { type: "string", maxLength: 1500 },
+              keyPoints: { 
+                type: "array", 
+                items: { type: "string" },
+                minItems: 3,
+                maxItems: 10
+              },
+              implications: { type: "string", maxLength: 1000 }
+            },
+            required: ["executiveSummary", "detailedSummary", "keyPoints", "implications"],
+            additionalProperties: false
+          }
+        }
+      }
     });
     
     const text = response.choices[0].message.content.trim();
