@@ -8,6 +8,9 @@ const rateLimit = require('express-rate-limit');
 const db = require('./database');
 const ContentSanitizer = require('./services/contentSanitizer');
 const aiClassificationService = require('./services/aiClassification');
+const EnhancedAIClassificationService = require('./services/enhancedAIClassification');
+const CategoryService = require('./services/categoryService');
+const ActionService = require('./services/actionService');
 const politicalContentAnalyzer = require('./services/politicalContentAnalyzer');
 const { generalContentProcessor } = require('./services/generalContentProcessor');
 const { secureConfigService } = require('./services/secureConfig');
@@ -59,8 +62,16 @@ const PORT = process.env.PORT || 3000;
 
 // Database service is already initialized as singleton
 
-// Make database service available to routes
+// Initialize enhanced services
+const enhancedClassifier = new EnhancedAIClassificationService();
+const categoryService = new CategoryService(db);
+const actionService = new ActionService(db);
+
+// Make services available to routes and middleware
 app.locals.db = db;
+app.locals.enhancedClassifier = enhancedClassifier;
+app.locals.categoryService = categoryService;
+app.locals.actionService = actionService;
 
 // Setup global error handlers
 handleUnhandledRejection();
@@ -152,7 +163,7 @@ setupSwagger(app);
  *                   type: boolean
  *                 classification:
  *                   type: string
- *                   enum: [US_Politics_News, General]
+ *                   description: Dynamic category based on AI classification
  *                 confidence:
  *                   type: number
  *                 provider:
@@ -373,7 +384,7 @@ app.post('/api/content', rateLimitConfigs.content, requirePermission('content:cr
       title: title,
       source_domain: domain,
       content_type: contentType || 'other',
-      category: determineCategory(contentType, url, title),
+      category: 'pending_classification', // Will be updated after AI classification
       raw_content: rawContent,
       metadata: {
         ...metadata,
@@ -412,39 +423,80 @@ app.post('/api/content', rateLimitConfigs.content, requirePermission('content:cr
       status: 'completed'
     });
 
-    // Perform AI classification asynchronously (don't block content capture)
+    // Perform enhanced AI classification and processing asynchronously
     setImmediate(async () => {
       try {
-        logger.info('Starting AI classification', { contentId: savedContent.id });
+        logger.info('Starting enhanced AI classification and processing', { contentId: savedContent.id });
         
-        const classificationResult = await aiClassificationService.classifyContent(savedContent);
+        // Enhanced classification with modular system
+        const classificationResult = await enhancedClassifier.classifyContent(savedContent);
         
-        logger.info('AI classification completed', {
+        logger.info('Enhanced AI classification completed', {
           contentId: savedContent.id,
-          classification: classificationResult.classification,
+          rawCategory: classificationResult.rawCategory,
+          resolvedCategory: classificationResult.resolvedCategory.name,
+          matchType: classificationResult.matchType,
           confidence: classificationResult.confidence,
           provider: classificationResult.provider
         });
         
-        // Update content with classification results
+        // Update content with enhanced classification results
+        await categoryService.updateContentCategory(
+          savedContent.id, 
+          classificationResult.resolvedCategory.id,
+          classificationResult.rawCategory
+        );
+        
         await db.updateContentItem(savedContent.id, {
-          category: classificationResult.classification,
           ai_confidence_score: classificationResult.confidence,
-          processing_status: classificationResult.needsManualReview ? 'needs_review' : 'completed',
+          processing_status: classificationResult.confidence < 0.7 ? 'needs_review' : 'processing',
           processed_at: new Date()
         });
 
         // Log AI classification
         await db.createProcessingLog({
           content_items: { connect: { id: savedContent.id } },
-          operation: 'ai_classification',
+          operation: 'enhanced_ai_classification',
           status: 'completed',
           model_used: classificationResult.provider
         });
 
-        logger.info('Content classification pipeline completed', {
+        // Execute category-specific actions
+        const actionResult = await actionService.executeActionsForCategory(
+          savedContent, 
+          classificationResult.resolvedCategory.id
+        );
+
+        logger.info('Category actions executed', {
           contentId: savedContent.id,
-          finalCategory: classificationResult.classification
+          category: classificationResult.resolvedCategory.name,
+          actionsExecuted: actionResult.executed,
+          totalActions: actionResult.total,
+          errors: actionResult.errors
+        });
+
+        // Update processing status based on action results
+        const finalStatus = actionResult.errors > 0 ? 'needs_review' : 'completed';
+        await db.updateContentItem(savedContent.id, {
+          processing_status: finalStatus,
+          metadata: {
+            ...savedContent.metadata,
+            enhancedProcessing: {
+              category: classificationResult.resolvedCategory.name,
+              rawCategory: classificationResult.rawCategory,
+              matchType: classificationResult.matchType,
+              confidence: classificationResult.confidence,
+              actionsExecuted: actionResult.executed,
+              processingResults: actionResult.results,
+              processingTime: new Date().toISOString()
+            }
+          }
+        });
+
+        logger.info('Enhanced content processing pipeline completed', {
+          contentId: savedContent.id,
+          finalCategory: classificationResult.resolvedCategory.name,
+          finalStatus: finalStatus
         });
 
       } catch (classificationError) {
@@ -553,7 +605,7 @@ app.post('/api/content/public', rateLimitConfigs.content, validateContentCapture
       title: title,
       source_domain: domain,
       content_type: contentType || 'other',
-      category: determineCategory(contentType, url, title),
+      category: 'pending_classification', // Will be updated after AI classification
       raw_content: rawContent,
       metadata: {
         ...metadata,
@@ -593,136 +645,80 @@ app.post('/api/content/public', rateLimitConfigs.content, validateContentCapture
       status: 'completed'
     });
 
-    // Perform AI classification asynchronously (don't block content capture)
+    // Perform enhanced AI classification and processing asynchronously
     setImmediate(async () => {
       try {
-        logger.info('Starting AI classification', { contentId: savedContent.id });
+        logger.info('Starting enhanced AI classification and processing', { contentId: savedContent.id });
         
-        const classificationResult = await aiClassificationService.classifyContent(savedContent);
+        // Enhanced classification with modular system
+        const classificationResult = await enhancedClassifier.classifyContent(savedContent);
         
-        logger.info('AI classification completed', {
+        logger.info('Enhanced AI classification completed', {
           contentId: savedContent.id,
-          classification: classificationResult.classification,
+          rawCategory: classificationResult.rawCategory,
+          resolvedCategory: classificationResult.resolvedCategory.name,
+          matchType: classificationResult.matchType,
           confidence: classificationResult.confidence,
           provider: classificationResult.provider
         });
         
-        // Update content with classification results
+        // Update content with enhanced classification results
+        await categoryService.updateContentCategory(
+          savedContent.id, 
+          classificationResult.resolvedCategory.id,
+          classificationResult.rawCategory
+        );
+        
         await db.updateContentItem(savedContent.id, {
-          category: classificationResult.classification,
           ai_confidence_score: classificationResult.confidence,
-          processing_status: classificationResult.needsManualReview ? 'needs_review' : 'completed',
+          processing_status: classificationResult.confidence < 0.7 ? 'needs_review' : 'processing',
           processed_at: new Date()
         });
-
-        // If classified as political content, run political analysis
-        if (classificationResult.classification === 'US_Politics_News') {
-          try {
-            logger.info('Starting political content analysis', { contentId: savedContent.id });
-            
-            const politicalAnalysis = await politicalContentAnalyzer.analyzeContent(savedContent);
-            
-            // Save political analysis to database
-            await db.createPoliticalAnalysis({
-              content_id: savedContent.id,
-              bias_score: politicalAnalysis.bias_score,
-              bias_confidence: politicalAnalysis.bias_confidence,
-              bias_label: politicalAnalysis.bias_label,
-              quality_score: politicalAnalysis.quality_score,
-              credibility_score: politicalAnalysis.credibility_score,
-              loaded_language: politicalAnalysis.loaded_language,
-              implications: politicalAnalysis.implications,
-              summary_executive: politicalAnalysis.summary_executive,
-              summary_detailed: politicalAnalysis.summary_detailed,
-              key_points: politicalAnalysis.key_points,
-              processing_model: politicalAnalysis.processing_model
-            });
-
-            logger.info('Political content analysis completed', {
-              contentId: savedContent.id,
-              biasLabel: politicalAnalysis.bias_label,
-              qualityScore: politicalAnalysis.quality_score,
-              credibilityScore: politicalAnalysis.credibility_score
-            });
-          } catch (politicalError) {
-            logger.error('Political analysis failed', {
-              contentId: savedContent.id,
-              error: politicalError.message
-            });
-          }
-        } else {
-          // For general (non-political) content, run lightweight processing
-          try {
-            logger.info('Starting general content processing', { contentId: savedContent.id });
-            
-            const generalProcessing = await generalContentProcessor.process(savedContent);
-            
-            // Update content with general processing results
-            const updateData = {
-              metadata: {
-                ...savedContent.metadata,
-                generalProcessing: {
-                  summary: generalProcessing.summary,
-                  keywords: generalProcessing.keywords,
-                  readingTime: generalProcessing.readingTime,
-                  processingTime: generalProcessing.metadata.processingTime,
-                  processor: generalProcessing.metadata.processor
-                }
-              }
-            };
-            
-            await db.updateContentItem(savedContent.id, updateData);
-            
-            logger.info('General content processing completed', {
-              contentId: savedContent.id,
-              keywordCount: generalProcessing.keywords.length,
-              readingTime: generalProcessing.readingTime,
-              summaryLength: generalProcessing.summary.length,
-              processingTime: generalProcessing.metadata.processingTime
-            });
-            
-            // Log general processing
-            await db.createProcessingLog({
-              content_items: { connect: { id: savedContent.id } },
-              operation: 'general_processing',
-              status: 'completed',
-              processing_time_ms: generalProcessing.metadata.processingTime
-            });
-            
-          } catch (generalError) {
-            logger.error('General content processing failed', {
-              contentId: savedContent.id,
-              error: generalError.message
-            });
-            
-            // Log failed general processing (but don't fail the entire pipeline)
-            try {
-              await db.createProcessingLog({
-                content_items: { connect: { id: savedContent.id } },
-                operation: 'general_processing',
-                status: 'failed',
-                error_message: generalError.message
-              });
-            } catch (logError) {
-              logger.error('Failed to log general processing error', {
-                contentId: savedContent.id,
-                logError: logError.message
-              });
-            }
-          }
-        }
 
         // Log AI classification
         await db.createProcessingLog({
           content_items: { connect: { id: savedContent.id } },
-          operation: 'ai_classification',
+          operation: 'enhanced_ai_classification',
           status: 'completed',
           model_used: classificationResult.provider
         });
 
-        logger.info('Content classification pipeline completed', {
+        // Execute category-specific actions
+        const actionResult = await actionService.executeActionsForCategory(
+          savedContent, 
+          classificationResult.resolvedCategory.id
+        );
+
+        logger.info('Category actions executed', {
           contentId: savedContent.id,
-          finalCategory: classificationResult.classification
+          category: classificationResult.resolvedCategory.name,
+          actionsExecuted: actionResult.executed,
+          totalActions: actionResult.total,
+          errors: actionResult.errors
+        });
+
+        // Update processing status based on action results
+        const finalStatus = actionResult.errors > 0 ? 'needs_review' : 'completed';
+        await db.updateContentItem(savedContent.id, {
+          processing_status: finalStatus,
+          metadata: {
+            ...savedContent.metadata,
+            enhancedProcessing: {
+              category: classificationResult.resolvedCategory.name,
+              rawCategory: classificationResult.rawCategory,
+              matchType: classificationResult.matchType,
+              confidence: classificationResult.confidence,
+              actionsExecuted: actionResult.executed,
+              processingResults: actionResult.results,
+              processingTime: new Date().toISOString()
+            }
+          }
+        });
+
+        logger.info('Enhanced content processing pipeline completed', {
+          contentId: savedContent.id,
+          finalCategory: classificationResult.resolvedCategory.name,
+          finalStatus: finalStatus
         });
 
       } catch (classificationError) {
@@ -800,8 +796,7 @@ app.post('/api/content/public', rateLimitConfigs.content, validateContentCapture
  *         name: category
  *         schema:
  *           type: string
- *           enum: [US_Politics_News, General]
- *         description: Filter by content category
+ *         description: Filter by content category (dynamic categories available)
  *       - in: query
  *         name: contentType
  *         schema:
@@ -1090,45 +1085,165 @@ app.get('/api/digests/:date', requirePermission('digest:read'), validateDigestDa
     });
 }));
 
-// Helper function to determine content category
-function determineCategory(contentType, url, title) {
-  const politicsKeywords = [
-    'politics', 'election', 'congress', 'senate', 'house', 'president',
-    'biden', 'trump', 'republican', 'democrat', 'gop', 'dnc', 'rnc',
-    'campaign', 'vote', 'voting', 'poll', 'policy', 'government',
-    'supreme court', 'federal', 'state', 'governor', 'mayor'
-  ];
+/**
+ * @swagger
+ * /api/categories:
+ *   get:
+ *     summary: Get available content categories
+ *     description: Retrieve all available content categories with their statistics
+ *     tags: [Categories]
+ *     security: []
+ *     responses:
+ *       200:
+ *         description: Categories retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               allOf:
+ *                 - $ref: '#/components/schemas/SuccessResponse'
+ *                 - type: object
+ *                   properties:
+ *                     data:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           id: { type: integer }
+ *                           name: { type: string }
+ *                           description: { type: string }
+ *                           priority: { type: integer }
+ *                           is_active: { type: boolean }
+ *                           is_fallback: { type: boolean }
+ *                           action_count: { type: integer }
+ *                           matcher_count: { type: integer }
+ *                           content_count: { type: integer }
+ */
+app.get('/api/categories', asyncHandler(async (req, res) => {
+  const categories = await categoryService.getCategories();
+  
+  res.json({
+    success: true,
+    data: categories
+  });
+}));
 
-  const politicsDomains = [
-    'cnn.com', 'foxnews.com', 'msnbc.com', 'politico.com', 'washingtonpost.com',
-    'nytimes.com', 'npr.org', 'bbc.com', 'reuters.com', 'ap.org',
-    'thehill.com', 'rollcall.com', 'axios.com', 'punchbowl.news'
-  ];
+/**
+ * @swagger
+ * /api/categories/{id}/aliases:
+ *   get:
+ *     summary: Get aliases for a category
+ *     description: Retrieve all aliases for a specific category
+ *     tags: [Categories]
+ *     security: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Category ID
+ *     responses:
+ *       200:
+ *         description: Category aliases retrieved successfully
+ */
+app.get('/api/categories/:id/aliases', asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const aliases = await categoryService.getAliases(parseInt(id));
+  
+  res.json({
+    success: true,
+    data: aliases
+  });
+}));
 
-  const urlLower = url.toLowerCase();
-  const titleLower = title.toLowerCase();
+/**
+ * @swagger
+ * /api/categories/{id}/aliases:
+ *   post:
+ *     summary: Create a new category alias
+ *     description: Create a new alias for automatic category resolution
+ *     tags: [Categories]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Category ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               alias:
+ *                 type: string
+ *                 description: The alias text
+ *               confidence_threshold:
+ *                 type: number
+ *                 minimum: 0
+ *                 maximum: 1
+ *                 default: 0.7
+ *                 description: Confidence threshold for this alias
+ *             required: [alias]
+ *     responses:
+ *       201:
+ *         description: Alias created successfully
+ *       400:
+ *         description: Invalid input
+ *       401:
+ *         description: Authentication required
+ */
+app.post('/api/categories/:id/aliases', authenticateToken, requireRole(['admin', 'editor']), asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const { alias, confidence_threshold } = req.body;
 
-  // Check URL patterns
-  if (urlLower.includes('/politics') || urlLower.includes('/election')) {
-    return 'US_Politics_News';
+  if (!alias) {
+    return res.status(400).json({
+      error: 'Alias is required'
+    });
   }
 
-  // Check domains
-  const domain = new URL(url).hostname.toLowerCase().replace('www.', '');
-  if (politicsDomains.some(d => domain.includes(d))) {
-    // Check for politics keywords in title for news sites
-    if (politicsKeywords.some(keyword => titleLower.includes(keyword))) {
-      return 'US_Politics_News';
-    }
-  }
+  const result = await categoryService.createAlias(alias, parseInt(id), confidence_threshold);
+  
+  res.status(201).json({
+    success: true,
+    message: 'Category alias created successfully',
+    data: result
+  });
+}));
 
-  // Check title for politics content
-  if (politicsKeywords.some(keyword => titleLower.includes(keyword))) {
-    return 'US_Politics_News';
-  }
-
-  return 'General';
-}
+/**
+ * @swagger
+ * /api/processing/stats:
+ *   get:
+ *     summary: Get content processing statistics
+ *     description: Retrieve statistics about content processing by category
+ *     tags: [Processing]
+ *     security: []
+ *     parameters:
+ *       - in: query
+ *         name: timeRange
+ *         schema:
+ *           type: string
+ *           default: '7 days'
+ *         description: Time range for statistics (e.g., '7 days', '30 days')
+ *     responses:
+ *       200:
+ *         description: Processing statistics retrieved successfully
+ */
+app.get('/api/processing/stats', asyncHandler(async (req, res) => {
+  const { timeRange = '7 days' } = req.query;
+  const stats = await categoryService.getProcessingStats(timeRange);
+  
+  res.json({
+    success: true,
+    data: stats
+  });
+}));
 
 // Error handling middleware
 app.use(errorLogger);
@@ -1159,6 +1274,10 @@ async function startServer() {
     // Initialize AI classification service with secure config
     await aiClassificationService.initialize();
     
+    // Initialize enhanced services
+    await enhancedClassifier.initialize(db);
+    await actionService.initialize();
+    
     // Initialize political content analyzer
     await politicalContentAnalyzer.initialize();
     
@@ -1166,7 +1285,9 @@ async function startServer() {
     app.listen(PORT, () => {
       console.log(`🔒 Secure configuration initialized`);
       console.log(`🤖 AI classification service ready`);
+      console.log(`⚡ Enhanced AI classification service ready`);
       console.log(`🎯 Political content analyzer ready`);
+      console.log(`🚀 Action service ready with processors`);
       console.log(`📚 API Documentation available at /api/docs`);
       console.log(`📄 OpenAPI spec available at /api/docs.json`);
       console.log(`Dailies API server running on port ${PORT}`);

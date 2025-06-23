@@ -47,6 +47,24 @@ Core intelligence for political vs general content
 - 90%+ accuracy target with confidence scoring
 - Redis caching for performance
 
+### 🎥 **Task 7: YouTube Video Processing** *(High Priority)*
+Intelligent video content processing with transcript analysis
+- YouTube transcript extraction via youtube-transcript-api or YouTube Data API
+- Hybrid classification: extract transcript → classify by content into existing categories
+- Video-specific metadata processing (duration, views, channel info)
+- Fallback to "Video Content" category when transcripts unavailable
+- Support for educational, tech, political, and entertainment video content
+
+### 🎯 **Task 8: 3D Printing Category Refinement** *(High Priority)*
+Distinguish between 3D models vs articles about 3D printing
+- Restrict "3D Printing" category to actual model sites only:
+  - printables.com, thingiverse.com, makerworld.com, thangs.com
+- Move 3D printing articles/tutorials to appropriate categories:
+  - hackaday.com → DIY Electronics
+  - blogs/news about 3D printing → Technology
+- Update matchers to reflect model vs article distinction
+- Ensure specialized 3D printing processors only run on actual models
+
 ---
 
 ## 🎨 **BRANDING & VISUAL IDENTITY**

@@ -130,8 +130,15 @@ const swaggerDefinition = {
           },
           category: {
             type: 'string',
-            enum: ['US_Politics_News', 'General'],
-            description: 'Content category'
+            description: 'Content category (dynamic based on classification system)'
+          },
+          primary_category_id: {
+            type: 'integer',
+            description: 'Primary category ID from categories table'
+          },
+          ai_raw_category: {
+            type: 'string',
+            description: 'Raw category returned by AI before resolution'
           },
           raw_content: {
             type: 'string',
@@ -147,8 +154,14 @@ const swaggerDefinition = {
           },
           processing_status: {
             type: 'string',
-            enum: ['pending', 'processing', 'completed', 'failed'],
+            enum: ['pending', 'processing', 'completed', 'failed', 'needs_review', 'partial_processing'],
             description: 'Processing status'
+          },
+          ai_confidence_score: {
+            type: 'number',
+            minimum: 0,
+            maximum: 1,
+            description: 'AI classification confidence score'
           },
           captured_at: {
             type: 'string',
@@ -232,7 +245,11 @@ const swaggerDefinition = {
           title: { type: 'string' },
           category: {
             type: 'string',
-            enum: ['US_Politics_News', 'General']
+            description: 'Content category (must match available categories in system)'
+          },
+          primary_category_id: {
+            type: 'integer',
+            description: 'Primary category ID from categories table'
           },
           content_type: {
             type: 'string',

@@ -37,6 +37,28 @@ class DatabaseService {
     await this.prisma.$queryRaw`SELECT 1`;
   }
 
+  // Raw query method for enhanced services
+  async query(sql, params = []) {
+    try {
+      // Use Prisma's $queryRawUnsafe for parameterized queries
+      const result = await this.prisma.$queryRawUnsafe(sql, ...params);
+      return { rows: result };
+    } catch (error) {
+      console.error('Database query error:', error);
+      throw error;
+    }
+  }
+
+  // Get database client for transactions (for services that need it)
+  async getClient() {
+    // For Prisma, we can use transactions differently
+    // This is a compatibility method for services expecting a client
+    return {
+      query: this.query.bind(this),
+      release: () => {}, // No-op for Prisma
+    };
+  }
+
   // Content operations
   async createContentItem(data) {
     return await this.prisma.content_items.create({ data });

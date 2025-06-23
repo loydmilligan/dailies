@@ -7,17 +7,20 @@ console.log('Dailies service worker starting...');
 chrome.runtime.onInstalled.addListener((details) => {
   console.log('Extension installed:', details.reason);
   
-  // Create context menu items
-  chrome.contextMenus.create({
-    id: 'capture-page',
-    title: 'Capture this page',
-    contexts: ['page']
-  });
-  
-  chrome.contextMenus.create({
-    id: 'capture-selection',
-    title: 'Capture selected text',
-    contexts: ['selection']
+  // Remove all existing context menus first to avoid duplicates
+  chrome.contextMenus.removeAll(() => {
+    // Create context menu items
+    chrome.contextMenus.create({
+      id: 'capture-page',
+      title: 'Capture this page',
+      contexts: ['page']
+    });
+    
+    chrome.contextMenus.create({
+      id: 'capture-selection',
+      title: 'Capture selected text',
+      contexts: ['selection']
+    });
   });
 });
 

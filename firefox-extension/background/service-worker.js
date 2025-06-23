@@ -26,23 +26,26 @@ api.runtime.onStartup.addListener(() => {
 
 // Context Menu Setup
 function setupContextMenus() {
-  // Create context menu for text selection
-  api.contextMenus.create({
-    id: 'capture-selection',
-    title: 'Capture selected text with Dailies',
-    contexts: ['selection'],
-    documentUrlPatterns: ['http://*/*', 'https://*/*']
-  });
+  // Remove all existing context menus first to avoid duplicates
+  api.contextMenus.removeAll(() => {
+    // Create context menu for text selection
+    api.contextMenus.create({
+      id: 'capture-selection',
+      title: 'Capture selected text with Dailies',
+      contexts: ['selection'],
+      documentUrlPatterns: ['http://*/*', 'https://*/*']
+    });
 
-  // Create context menu for page capture
-  api.contextMenus.create({
-    id: 'capture-page',
-    title: 'Capture this page with Dailies',
-    contexts: ['page'],
-    documentUrlPatterns: ['http://*/*', 'https://*/*']
-  });
+    // Create context menu for page capture
+    api.contextMenus.create({
+      id: 'capture-page',
+      title: 'Capture this page with Dailies',
+      contexts: ['page'],
+      documentUrlPatterns: ['http://*/*', 'https://*/*']
+    });
 
-  console.log('Dailies context menus created');
+    console.log('Dailies context menus created');
+  });
 }
 
 // Context menu click handler
