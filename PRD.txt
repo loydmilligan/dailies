@@ -1,0 +1,286 @@
+# DAILIES - PRODUCT REQUIREMENTS DOCUMENT (PRD)
+# Version: 2.0 (Post-Modular Architecture Refactor)
+# Last Updated: June 23, 2025
+
+## EXECUTIVE SUMMARY
+
+Dailies is a personal content curation and knowledge management system with a focus on intelligent web dashboard development. Following successful implementation of the modular content processing architecture, this PRD focuses on building a comprehensive web interface for content management, digest generation, and system configuration.
+
+## PROJECT STATUS: FOUNDATION COMPLETE
+
+### COMPLETED INFRASTRUCTURE (Phase 1):
+✅ Modular Content Processing Architecture
+✅ Enhanced AI Classification (Gemini, OpenAI, Anthropic)
+✅ Dynamic Action Service (20+ specialized processors)
+✅ Database Schema (PostgreSQL with 9 content categories)
+✅ Browser Extensions (Chrome + Firefox)
+✅ RESTful API Backend (Node.js + Express)
+✅ Domain-Based Classification Hints
+✅ Comprehensive Logging & Monitoring
+
+### CURRENT PRIORITY: WEB DASHBOARD DEVELOPMENT
+
+## CORE USER PERSONAS
+
+### PRIMARY: Personal Content Curator
+- Saves 20-50 articles/videos daily via browser extension
+- Wants intelligent categorization and daily digest generation
+- Values processing transparency and manual override capabilities
+- Needs efficient content review and management workflows
+
+### SECONDARY: Power User
+- Manages large content volumes (100+ items/day)
+- Requires advanced filtering, search, and bulk operations
+- Wants detailed analytics and system performance insights
+- Needs customizable digest templates and delivery options
+
+## WEB DASHBOARD REQUIREMENTS
+
+### PAGE 1: DASHBOARD (Priority: Critical)
+
+**Core Purpose**: Real-time system overview and quick access to recent activity
+
+**User Stories (7 total)**:
+1. As a user, I want to see today's capture statistics (count, categories, processing status)
+2. As a user, I want to view recent captures (last 10-20 items) with thumbnails and quick actions
+3. As a user, I want to see processing pipeline health (AI classification success rate, errors)
+4. As a user, I want quick access to today's generated digest
+5. As a user, I want to see weekly capture trends in a simple chart
+6. As a user, I want notifications about failed processing or system issues
+7. As a user, I want quick links to common tasks (manual content entry, digest generation)
+
+**Technical Requirements**:
+- Real-time updates via WebSocket or polling
+- Responsive grid layout for metrics cards
+- Chart visualization (Chart.js or similar)
+- Progressive loading for performance
+
+### PAGE 2: CONTENT MANAGEMENT (Priority: Critical)
+
+**Core Purpose**: Advanced content browsing, filtering, and management
+
+**User Stories (11 total)**:
+1. As a user, I want to view all captured content in a paginated, searchable table
+2. As a user, I want to filter content by category, date range, processing status, and source domain
+3. As a user, I want to search content by title, URL, or full-text content
+4. As a user, I want to sort content by capture date, processing date, or relevance score
+5. As a user, I want to select multiple items for bulk operations (delete, re-classify, tag)
+6. As a user, I want to manually override AI classifications when they're incorrect
+7. As a user, I want to add custom tags to content items for personal organization
+8. As a user, I want to mark content as "read" or "archived" to manage my queue
+9. As a user, I want to see processing details (AI confidence, category resolution) for each item
+10. As a user, I want to export selected content to various formats (JSON, CSV, Markdown)
+11. As a user, I want to duplicate content for manual re-processing with different settings
+
+**Technical Requirements**:
+- Advanced filtering UI with real-time results
+- Bulk selection with action toolbar
+- Inline editing for categories and tags
+- Export functionality with format options
+- Pagination with configurable page sizes
+
+### PAGE 3: CONTENT DETAIL MODAL (Priority: High)
+
+**Core Purpose**: Comprehensive view and editing of individual content items
+
+**User Stories (12 total)**:
+1. As a user, I want to view the full extracted content in a readable format
+2. As a user, I want to see all metadata (capture date, source, processing results)
+3. As a user, I want to edit the title, category, and tags inline
+4. As a user, I want to see the AI classification process (raw response, resolution, confidence)
+5. As a user, I want to view all processing results from category-specific actions
+6. As a user, I want to manually trigger re-processing with different settings
+7. As a user, I want to see the content's inclusion status in generated digests
+8. As a user, I want to add personal notes and highlights to content
+9. As a user, I want to view similar content suggestions based on category/tags
+10. As a user, I want to share content externally or copy formatted snippets
+11. As a user, I want to see the content's reading time and engagement metrics
+12. As a user, I want to navigate between content items without closing the modal
+
+**Technical Requirements**:
+- Modal with full-screen option
+- Rich text display with syntax highlighting
+- Tabbed interface for different data views
+- Keyboard navigation support
+- Real-time saving of edits
+
+### PAGE 4: DIGEST MANAGEMENT (Priority: High)
+
+**Core Purpose**: Daily digest generation, customization, and delivery management
+
+**User Stories (11 total)**:
+1. As a user, I want to view a calendar of generated digests with status indicators
+2. As a user, I want to manually generate a digest for any date range
+3. As a user, I want to preview digest content before finalizing
+4. As a user, I want to customize digest templates (sections, ordering, styling)
+5. As a user, I want to exclude specific content items from digest generation
+6. As a user, I want to configure automatic digest generation schedules
+7. As a user, I want to set up email delivery with customizable timing
+8. As a user, I want to generate digest variants (summary-only, full-content, topic-focused)
+9. As a user, I want to track digest delivery status and engagement metrics
+10. As a user, I want to regenerate digests with updated content or settings
+11. As a user, I want to export digests in multiple formats (HTML, PDF, Markdown, Audio)
+
+**Technical Requirements**:
+- Calendar component with digest status visualization
+- Live preview with template engine
+- Email scheduling and delivery tracking
+- Multiple export format generation
+- Template editor with drag-and-drop sections
+
+### PAGE 5: CONFIGURATION (Priority: Medium)
+
+**Core Purpose**: System settings, category management, and AI configuration
+
+**User Stories (14 total)**:
+1. As a user, I want to manage content categories (create, edit, disable, reorder)
+2. As a user, I want to configure category-action relationships (which processors run for each category)
+3. As a user, I want to manage domain matchers for classification hints
+4. As a user, I want to create and manage category aliases for AI response mapping
+5. As a user, I want to configure AI provider settings (primary, fallbacks, API keys)
+6. As a user, I want to set AI confidence thresholds for manual review triggers
+7. As a user, I want to configure notification preferences (email, browser, frequency)
+8. As a user, I want to manage user account settings (password, preferences, timezone)
+9. As a user, I want to configure content capture settings (auto-classification, default tags)
+10. As a user, I want to set up content retention policies (auto-archive, deletion rules)
+11. As a user, I want to configure digest generation defaults (frequency, content selection)
+12. As a user, I want to manage API integrations and external service connections
+13. As a user, I want to configure system monitoring and alert thresholds
+14. As a user, I want to backup/restore system configuration and content
+
+**Technical Requirements**:
+- Tabbed settings interface with logical grouping
+- Form validation with real-time feedback
+- Secure API key management
+- Configuration backup/restore functionality
+- Settings versioning and rollback capability
+
+### PAGE 6: ANALYTICS (Priority: Medium)
+
+**Core Purpose**: System performance insights and content processing analytics
+
+**User Stories (10 total)**:
+1. As a user, I want to see content capture trends over time (daily, weekly, monthly)
+2. As a user, I want to view AI classification accuracy and confidence distributions
+3. As a user, I want to analyze content by category breakdown and source domains
+4. As a user, I want to track processing pipeline performance (timing, error rates)
+5. As a user, I want to see digest generation statistics and engagement metrics
+6. As a user, I want to monitor system resource usage and health indicators
+7. As a user, I want to identify content processing bottlenecks and failures
+8. As a user, I want to track AI provider usage and cost analysis
+9. As a user, I want to export analytics data for external analysis
+10. As a user, I want to set up custom analytics dashboards for specific metrics
+
+**Technical Requirements**:
+- Interactive charts and data visualization
+- Date range selectors and filtering options
+- Real-time metrics with historical comparison
+- Export functionality for analytics data
+- Customizable dashboard widgets
+
+## TECHNICAL ARCHITECTURE
+
+### FRONTEND STACK:
+- **Framework**: Express.js + EJS templates (server-side rendered)
+- **Interactivity**: HTMX for dynamic updates and AJAX
+- **Styling**: Tailwind CSS (CDN, no build process)
+- **Charts**: Chart.js for analytics visualizations
+- **UI Components**: Custom components with HTMX attributes
+
+### API INTEGRATION:
+- **Communication**: HTMX declarative AJAX (no manual HTTP client needed)
+- **Authentication**: JWT tokens with Express session management
+- **Error Handling**: Server-side error pages + HTMX error responses
+- **Real-time Updates**: HTMX polling and server-sent events
+- **Form Handling**: HTMX form submissions with validation
+
+### DEVELOPMENT WORKFLOW:
+- **Build Tool**: No build process needed (server-side templates)
+- **Testing**: Manual testing + automated API testing
+- **Linting**: ESLint for JavaScript consistency
+- **Package Manager**: npm with existing backend structure
+
+## IMPLEMENTATION PHASES
+
+### PHASE 1: FOUNDATION & DASHBOARD (Weeks 1-2)
+**Priority**: Dashboard page (foundation and navigation)
+- EJS template structure and navigation
+- Dashboard with real-time metrics and recent activity
+- Chart.js integration for visualizations
+- HTMX for dynamic updates
+- Responsive design with Tailwind CSS
+
+### PHASE 2: CONTENT MANAGEMENT (Weeks 3-4)
+**Priority**: Content Management page (core functionality)
+- Content listing with pagination
+- Advanced filtering and search with HTMX
+- Bulk operations with confirmation dialogs
+- PostgreSQL full-text search integration
+
+### PHASE 3: CONTENT DETAIL MODAL (Week 5)
+**Priority**: Content Detail modal (content editing)
+- Modal implementation with HTMX
+- Category-specific result displays
+- Form handling for content editing
+- Real-time validation and feedback
+
+### PHASE 4: CONFIGURATION (Week 6)
+**Priority**: Configuration page (system management)
+- AI provider settings and management
+- Category and domain matcher configuration
+- Secure form handling for API keys
+- Configuration backup/restore functionality
+
+### PHASE 5: ANALYTICS (Week 7)
+**Priority**: Analytics page (insights and monitoring)
+- Interactive Chart.js visualizations
+- Real-time metric updates
+- Data export functionality
+- Configurable dashboard widgets
+
+### PHASE 6: DIGEST MANAGEMENT (Week 8)
+**Priority**: Digest Management page (content curation)
+- Calendar widget integration
+- Markdown preview and editing
+- Digest generation and management
+- Email delivery configuration
+
+## SUCCESS METRICS
+
+### USER EXPERIENCE:
+- Page load times < 2 seconds
+- 95%+ uptime for all dashboard functionality
+- Mobile responsiveness across all screen sizes
+- Intuitive navigation requiring < 3 clicks for common tasks
+
+### FUNCTIONALITY:
+- 100% feature parity with backend API capabilities
+- Real-time updates with < 5 second latency
+- Bulk operations handling 1000+ items efficiently
+- Export functionality supporting all major formats
+
+### PERFORMANCE:
+- Client-side caching reducing API calls by 60%
+- Optimistic updates for immediate user feedback
+- Progressive loading for large datasets
+- Efficient re-rendering with React optimization
+
+## RISK MITIGATION
+
+### TECHNICAL RISKS:
+- **Large Dataset Performance**: Implement virtual scrolling and pagination
+- **Real-time Update Complexity**: Start with polling, upgrade to WebSocket
+- **Mobile Responsiveness**: Mobile-first design approach
+- **State Management Complexity**: Incremental adoption of state tools
+
+### USER EXPERIENCE RISKS:
+- **Feature Overwhelm**: Progressive disclosure and guided onboarding
+- **Learning Curve**: Contextual help and documentation
+- **Data Loss**: Auto-save and confirmation dialogs
+- **Performance Expectations**: Loading states and progress indicators
+
+## CONCLUSION
+
+This PRD represents a significant evolution from backend infrastructure to user-facing functionality. The modular architecture foundation enables rapid UI development focused on user experience and workflow efficiency. The phased approach ensures core functionality is delivered quickly while allowing for iterative improvement and user feedback integration.
+
+The success of this phase will establish Dailies as a comprehensive content curation platform, setting the foundation for advanced features like mobile apps, team collaboration, and AI-powered content recommendations.

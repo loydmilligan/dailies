@@ -1,0 +1,174 @@
+<!-- Digest Management Page -->
+<div class="space-y-6">
+    <!-- Page Header -->
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900">Digest Management</h1>
+            <p class="text-gray-600">Create and manage daily content digests</p>
+        </div>
+        <div class="flex space-x-3">
+            <button class="px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                Schedule Digest
+            </button>
+            <button class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                Generate New Digest
+            </button>
+        </div>
+    </div>
+
+    <!-- Digest Calendar -->
+    <div class="bg-white rounded-lg shadow p-6">
+        <h3 class="text-lg font-medium text-gray-900 mb-4">Digest Calendar</h3>
+        <div class="grid grid-cols-7 gap-1">
+            <!-- Calendar header -->
+            <div class="p-2 text-center text-sm font-medium text-gray-500">Sun</div>
+            <div class="p-2 text-center text-sm font-medium text-gray-500">Mon</div>
+            <div class="p-2 text-center text-sm font-medium text-gray-500">Tue</div>
+            <div class="p-2 text-center text-sm font-medium text-gray-500">Wed</div>
+            <div class="p-2 text-center text-sm font-medium text-gray-500">Thu</div>
+            <div class="p-2 text-center text-sm font-medium text-gray-500">Fri</div>
+            <div class="p-2 text-center text-sm font-medium text-gray-500">Sat</div>
+            
+            <!-- Calendar days (sample for current week) -->
+            <div class="p-2 text-center text-sm text-gray-400">29</div>
+            <div class="p-2 text-center text-sm text-gray-900 bg-blue-50 rounded">30</div>
+            <div class="p-2 text-center text-sm text-gray-900 bg-green-50 rounded">31</div>
+            <div class="p-2 text-center text-sm text-gray-900 bg-green-50 rounded">1</div>
+            <div class="p-2 text-center text-sm text-gray-900 bg-green-50 rounded">2</div>
+            <div class="p-2 text-center text-sm text-gray-900 bg-yellow-50 rounded">3</div>
+            <div class="p-2 text-center text-sm text-gray-900 bg-blue-100 border-2 border-blue-600 rounded font-medium">4</div>
+        </div>
+        <div class="mt-4 flex items-center space-x-4 text-sm">
+            <div class="flex items-center">
+                <div class="w-3 h-3 bg-green-100 rounded mr-2"></div>
+                <span>Digest Available</span>
+            </div>
+            <div class="flex items-center">
+                <div class="w-3 h-3 bg-blue-100 rounded mr-2"></div>
+                <span>Today</span>
+            </div>
+            <div class="flex items-center">
+                <div class="w-3 h-3 bg-yellow-100 rounded mr-2"></div>
+                <span>Scheduled</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Digests -->
+    <div class="bg-white rounded-lg shadow">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <h3 class="text-lg font-medium text-gray-900">Recent Digests</h3>
+        </div>
+        <div class="divide-y divide-gray-200">
+            <div class="p-6">
+                <div class="flex items-center justify-between">
+                    <div class="flex-1">
+                        <div class="flex items-center space-x-3">
+                            <h4 class="text-lg font-medium text-gray-900">Daily Digest - January 3, 2024</h4>
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                Generated
+                            </span>
+                        </div>
+                        <p class="text-sm text-gray-600 mt-1">
+                            15 items • 3 categories • Software Development, DIY Electronics, 3D Printing
+                        </p>
+                        <div class="flex items-center space-x-4 mt-2 text-sm text-gray-500">
+                            <span>Generated at 6:00 AM</span>
+                            <span>•</span>
+                            <span>Sent to 3 subscribers</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <button class="px-3 py-2 text-sm bg-white border border-gray-300 rounded-lg hover:bg-gray-50">
+                            Preview
+                        </button>
+                        <button class="px-3 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                            Send
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="p-6">
+                <div class="flex items-center justify-between">
+                    <div class="flex-1">
+                        <div class="flex items-center space-x-3">
+                            <h4 class="text-lg font-medium text-gray-900">Daily Digest - January 2, 2024</h4>
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                Sent
+                            </span>
+                        </div>
+                        <p class="text-sm text-gray-600 mt-1">
+                            22 items • 4 categories • Software Development, General Tech, News & Updates, DIY Electronics
+                        </p>
+                        <div class="flex items-center space-x-4 mt-2 text-sm text-gray-500">
+                            <span>Generated at 6:00 AM</span>
+                            <span>•</span>
+                            <span>Sent to 3 subscribers</span>
+                            <span>•</span>
+                            <span>89% open rate</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <button class="px-3 py-2 text-sm bg-white border border-gray-300 rounded-lg hover:bg-gray-50">
+                            View
+                        </button>
+                        <button class="px-3 py-2 text-sm bg-white border border-gray-300 rounded-lg hover:bg-gray-50">
+                            Analytics
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Digest Settings -->
+    <div class="bg-white rounded-lg shadow p-6">
+        <h3 class="text-lg font-medium text-gray-900 mb-4">Digest Settings</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Generation Time</label>
+                <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <option value="6">6:00 AM</option>
+                    <option value="7">7:00 AM</option>
+                    <option value="8">8:00 AM</option>
+                    <option value="9">9:00 AM</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Minimum Items</label>
+                <input type="number" value="10" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Categories to Include</label>
+                <div class="space-y-2">
+                    <label class="flex items-center">
+                        <input type="checkbox" checked class="rounded border-gray-300">
+                        <span class="ml-2 text-sm text-gray-700">Software Development</span>
+                    </label>
+                    <label class="flex items-center">
+                        <input type="checkbox" checked class="rounded border-gray-300">
+                        <span class="ml-2 text-sm text-gray-700">DIY Electronics</span>
+                    </label>
+                    <label class="flex items-center">
+                        <input type="checkbox" class="rounded border-gray-300">
+                        <span class="ml-2 text-sm text-gray-700">3D Printing</span>
+                    </label>
+                </div>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Email Template</label>
+                <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <option value="default">Default Template</option>
+                    <option value="minimal">Minimal Template</option>
+                    <option value="detailed">Detailed Template</option>
+                </select>
+            </div>
+        </div>
+        <div class="mt-6">
+            <button class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                Save Settings
+            </button>
+        </div>
+    </div>
+</div>

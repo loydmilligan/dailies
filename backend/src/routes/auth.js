@@ -4,33 +4,25 @@
 const express = require('express');
 const rateLimit = require('express-rate-limit');
 const { body, validationResult } = require('express-validator');
+const jwtService = require('../services/jwtService');
 const { 
-  generateToken,
-  generateRefreshToken,
   hashPassword, 
   comparePassword, 
   validatePasswordStrength,
-  authenticateToken,
-  authRateLimit,
-  loginRateLimit,
   logSecurityEvent
 } = require('../middleware/auth');
+const { authenticateJWT, requireRole } = require('../middleware/jwtAuth');
+const { 
+  authRateLimit, 
+  passwordResetRateLimit,
+  verifyCSRF 
+} = require('../middleware/csrfProtection');
 
 const router = express.Router();
 
-// Enhanced rate limiting for auth endpoints
-const loginLimiter = rateLimit({
-  ...loginRateLimit
-});
-
-const registerLimiter = rateLimit({
-  windowMs: 60 * 60 * 1000, // 1 hour
-  max: 3, // 3 registrations per hour per IP
-  message: {
-    error: 'Too many registration attempts',
-    retryAfter: '1 hour'
-  }
-});
+// Use enhanced rate limiting from security middleware
+const loginLimiter = authRateLimit;
+const registerLimiter = authRateLimit;
 
 // Input validation rules
 const registerValidation = [
@@ -165,13 +157,13 @@ router.post('/register', registerLimiter, registerValidation, async (req, res) =
     const user = await db.createUser(userData);
 
     // Generate JWT tokens
-    const accessToken = generateToken({
+    const accessToken = jwtService.generateAccessToken({
       userId: user.id,
       email: user.email,
       role: user.role
     });
     
-    const refreshToken = generateRefreshToken({
+    const refreshToken = jwtService.generateRefreshToken({
       userId: user.id,
       email: user.email
     });
@@ -256,7 +248,7 @@ router.post('/register', registerLimiter, registerValidation, async (req, res) =
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.post('/login', loginLimiter, loginValidation, async (req, res) => {
+router.post('/login', loginLimiter, verifyCSRF, loginValidation, async (req, res) => {
   try {
     // Check validation errors
     const errors = validationResult(req);
@@ -324,13 +316,13 @@ router.post('/login', loginLimiter, loginValidation, async (req, res) => {
     await db.updateUserLastLogin(user.id);
 
     // Generate JWT tokens
-    const accessToken = generateToken({
+    const accessToken = jwtService.generateAccessToken({
       userId: user.id,
       email: user.email,
       role: user.role
     });
     
-    const refreshToken = generateRefreshToken({
+    const refreshToken = jwtService.generateRefreshToken({
       userId: user.id,
       email: user.email
     });
@@ -374,7 +366,7 @@ router.post('/login', loginLimiter, loginValidation, async (req, res) => {
  * GET /api/auth/me
  * Get current user information
  */
-router.get('/me', authenticateToken, async (req, res) => {
+router.get('/me', authenticateJWT, async (req, res) => {
   try {
     const db = req.app.locals.db;
     
@@ -426,17 +418,9 @@ router.post('/refresh', async (req, res) => {
       });
     }
     
-    // Verify refresh token
-    const { verifyToken } = require('../middleware/auth');
-    const decoded = verifyToken(refreshToken);
-    
-    // Verify token type
-    if (decoded.tokenType !== 'refresh') {
-      throw new Error('Invalid token type');
-    }
-    
     // Get user data to generate new access token
     const db = req.app.locals.db;
+    const decoded = jwtService.verifyRefreshToken(refreshToken);
     const user = await db.getUserById(decoded.userId);
     
     if (!user) {
@@ -446,12 +430,12 @@ router.post('/refresh', async (req, res) => {
       });
     }
     
-    // Generate new access token
-    const accessToken = generateToken({
-      userId: user.id,
-      email: user.email,
-      role: user.role
+    // Generate new access token using JWT service
+    const result = jwtService.refreshAccessToken(refreshToken, {
+      role: user.role,
+      email: user.email
     });
+    const accessToken = result.accessToken;
     
     // Log token refresh
     logSecurityEvent('token_refreshed', {
@@ -482,21 +466,62 @@ router.post('/refresh', async (req, res) => {
 });
 
 /**
+ * GET /api/auth/verify
+ * Verify JWT token validity
+ */
+router.get('/verify', authenticateJWT, async (req, res) => {
+  try {
+    res.json({
+      success: true,
+      message: 'Token is valid',
+      data: {
+        userId: req.user.userId,
+        role: req.user.role,
+        email: req.user.email,
+        tokenExp: req.user.tokenExp
+      }
+    });
+  } catch (error) {
+    console.error('Token verification error:', error);
+    res.status(500).json({
+      error: 'Verification failed',
+      message: 'Unable to verify token'
+    });
+  }
+});
+
+/**
  * POST /api/auth/logout
  * Logout user and revoke tokens
  */
-router.post('/logout', authenticateToken, async (req, res) => {
+router.post('/logout', authenticateJWT, async (req, res) => {
   try {
+    // Revoke refresh token if provided
+    const { refreshToken } = req.body;
+    if (refreshToken) {
+      jwtService.revokeRefreshToken(refreshToken);
+    }
+    
+    // Clear session if exists
+    if (req.session) {
+      req.session.destroy((err) => {
+        if (err) {
+          console.error('Session destruction error:', err);
+        }
+      });
+    }
+    
+    // Clear cookies
+    res.clearCookie('access_token');
+    res.clearCookie('refresh_token');
+    res.clearCookie('dailies.sid');
+    
     // Log logout event
     logSecurityEvent('user_logged_out', {
       userId: req.user.userId,
-      tokenId: req.user.tokenId,
       ip: req.ip,
       userAgent: req.get('User-Agent')
     });
-    
-    // TODO: Add token to revocation list when implemented
-    // await revokeToken(req.user.tokenId);
     
     res.json({
       success: true,

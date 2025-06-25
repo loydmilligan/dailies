@@ -1,0 +1,436 @@
+<!-- Enhanced Dashboard Page with Real-time Metrics -->
+<div class="space-y-6" id="dashboard-container">
+    <!-- Page Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900">Dashboard</h1>
+            <p class="text-gray-600 mt-1">Real-time overview of your content processing pipeline</p>
+        </div>
+        <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3 mt-4 sm:mt-0">
+            <button 
+                class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                hx-get="/api/content/new-modal"
+                hx-target="#modal-container"
+                hx-swap="innerHTML"
+            >
+                <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                </svg>
+                Add Content
+            </button>
+            <button 
+                class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                hx-post="/api/digests/generate"
+                hx-confirm="Generate today's digest?"
+                hx-indicator="#digest-spinner"
+            >
+                <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                </svg>
+                Generate Digest
+                <span id="digest-spinner" class="htmx-indicator">
+                    <svg class="animate-spin -ml-1 mr-3 h-4 w-4 text-white inline" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                </span>
+            </button>
+            <a href="/digests" class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors text-center">
+                View Digests
+            </a>
+        </div>
+    </div>
+
+    <!-- Real-time Metrics Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6" id="metrics-cards">
+        <!-- Today's Captures -->
+        <div class="bg-white rounded-lg shadow p-6 border-l-4 border-blue-500">
+            <div class="flex items-center">
+                <div class="flex-shrink-0">
+                    <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                        <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                    </div>
+                </div>
+                <div class="ml-4 flex-1">
+                    <p class="text-sm font-medium text-gray-600">Today's Captures</p>
+                    <div 
+                        class="text-2xl font-bold text-gray-900"
+                        hx-get="/api/metrics/today/captures"
+                        hx-trigger="load, every 30s"
+                        hx-indicator="#captures-loading"
+                    >
+                        <span id="captures-loading" class="htmx-indicator">
+                            <div class="animate-pulse bg-gray-200 h-8 w-16 rounded"></div>
+                        </span>
+                        <span class="htmx-settling">Loading...</span>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-1">
+                        <span class="text-green-600">↗ +12%</span> from yesterday
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Processing Success Rate -->
+        <div class="bg-white rounded-lg shadow p-6 border-l-4 border-green-500">
+            <div class="flex items-center">
+                <div class="flex-shrink-0">
+                    <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                        <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                    </div>
+                </div>
+                <div class="ml-4 flex-1">
+                    <p class="text-sm font-medium text-gray-600">Success Rate</p>
+                    <div 
+                        class="text-2xl font-bold text-gray-900"
+                        hx-get="/api/metrics/success-rate"
+                        hx-trigger="load, every 30s"
+                        hx-indicator="#success-loading"
+                    >
+                        <span id="success-loading" class="htmx-indicator">
+                            <div class="animate-pulse bg-gray-200 h-8 w-16 rounded"></div>
+                        </span>
+                        <span class="htmx-settling">Loading...</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2 mt-2">
+                        <div class="bg-green-600 h-2 rounded-full transition-all duration-500" style="width: 94%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pending Review -->
+        <div class="bg-white rounded-lg shadow p-6 border-l-4 border-yellow-500">
+            <div class="flex items-center">
+                <div class="flex-shrink-0">
+                    <div class="w-8 h-8 bg-yellow-100 rounded-lg flex items-center justify-center">
+                        <svg class="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                </div>
+                <div class="ml-4 flex-1">
+                    <p class="text-sm font-medium text-gray-600">Pending Review</p>
+                    <div 
+                        class="text-2xl font-bold text-gray-900"
+                        hx-get="/api/metrics/pending-review"
+                        hx-trigger="load, every 30s"
+                        hx-indicator="#pending-loading"
+                    >
+                        <span id="pending-loading" class="htmx-indicator">
+                            <div class="animate-pulse bg-gray-200 h-8 w-16 rounded"></div>
+                        </span>
+                        <span class="htmx-settling">Loading...</span>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-1">
+                        <a href="/content?status=pending" class="text-blue-600 hover:text-blue-800">View all →</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- AI Confidence -->
+        <div class="bg-white rounded-lg shadow p-6 border-l-4 border-purple-500">
+            <div class="flex items-center">
+                <div class="flex-shrink-0">
+                    <div class="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
+                        <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                        </svg>
+                    </div>
+                </div>
+                <div class="ml-4 flex-1">
+                    <p class="text-sm font-medium text-gray-600">Avg AI Confidence</p>
+                    <div 
+                        class="text-2xl font-bold text-gray-900"
+                        hx-get="/api/metrics/ai-confidence"
+                        hx-trigger="load, every 30s"
+                        hx-indicator="#confidence-loading"
+                    >
+                        <span id="confidence-loading" class="htmx-indicator">
+                            <div class="animate-pulse bg-gray-200 h-8 w-16 rounded"></div>
+                        </span>
+                        <span class="htmx-settling">Loading...</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2 mt-2">
+                        <div class="bg-purple-600 h-2 rounded-full transition-all duration-500" style="width: 89%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts and Recent Activity Row -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Weekly Trends Charts (2/3 width) -->
+        <div class="lg:col-span-2 space-y-6">
+            <!-- Capture Trends Chart -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-medium text-gray-900">Weekly Capture Trends</h3>
+                    <div class="flex space-x-2">
+                        <button class="text-sm text-blue-600 hover:text-blue-800">7 days</button>
+                        <button class="text-sm text-gray-400">30 days</button>
+                    </div>
+                </div>
+                <div class="h-64">
+                    <canvas id="weeklyTrendsChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+
+            <!-- Category Distribution Chart -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-medium text-gray-900">Category Distribution</h3>
+                    <span class="text-sm text-gray-500">Last 7 days</span>
+                </div>
+                <div class="h-64">
+                    <canvas id="categoryDistributionChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Activity Sidebar (1/3 width) -->
+        <div class="bg-white rounded-lg shadow">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-lg font-medium text-gray-900">Recent Activity</h3>
+                    <button 
+                        class="text-sm text-blue-600 hover:text-blue-800"
+                        hx-get="/api/activity/recent"
+                        hx-target="#recent-activity-list"
+                        hx-indicator="#activity-refresh-spinner"
+                    >
+                        <span id="activity-refresh-spinner" class="htmx-indicator">
+                            <svg class="animate-spin h-4 w-4 text-blue-600 inline" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                        </span>
+                        Refresh
+                    </button>
+                </div>
+            </div>
+            <div 
+                class="p-4 max-h-96 overflow-y-auto"
+                id="recent-activity-list"
+                hx-get="/api/activity/recent"
+                hx-trigger="load, every 60s"
+                hx-indicator="#activity-loading"
+            >
+                <div id="activity-loading" class="htmx-indicator">
+                    <div class="space-y-4">
+                        <div class="animate-pulse flex space-x-3">
+                            <div class="w-2 h-2 bg-gray-300 rounded-full mt-2"></div>
+                            <div class="flex-1 space-y-2">
+                                <div class="h-4 bg-gray-300 rounded w-3/4"></div>
+                                <div class="h-3 bg-gray-300 rounded w-1/2"></div>
+                            </div>
+                        </div>
+                        <div class="animate-pulse flex space-x-3">
+                            <div class="w-2 h-2 bg-gray-300 rounded-full mt-2"></div>
+                            <div class="flex-1 space-y-2">
+                                <div class="h-4 bg-gray-300 rounded w-2/3"></div>
+                                <div class="h-3 bg-gray-300 rounded w-1/3"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Activity items will be loaded here -->
+                <div class="htmx-settling">Loading recent activity...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Captures Section -->
+    <div class="bg-white rounded-lg shadow">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <div class="flex items-center justify-between">
+                <h3 class="text-lg font-medium text-gray-900">Recent Captures</h3>
+                <a href="/content" class="text-sm text-blue-600 hover:text-blue-800">View all →</a>
+            </div>
+        </div>
+        <div 
+            class="p-6"
+            id="recent-captures"
+            hx-get="/api/content/recent?limit=6"
+            hx-trigger="load"
+            hx-indicator="#captures-grid-loading"
+        >
+            <div id="captures-grid-loading" class="htmx-indicator">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <!-- Loading skeleton -->
+                    <div class="animate-pulse">
+                        <div class="bg-gray-300 h-32 rounded-lg mb-2"></div>
+                        <div class="h-4 bg-gray-300 rounded w-3/4 mb-1"></div>
+                        <div class="h-3 bg-gray-300 rounded w-1/2"></div>
+                    </div>
+                    <div class="animate-pulse">
+                        <div class="bg-gray-300 h-32 rounded-lg mb-2"></div>
+                        <div class="h-4 bg-gray-300 rounded w-3/4 mb-1"></div>
+                        <div class="h-3 bg-gray-300 rounded w-1/2"></div>
+                    </div>
+                    <div class="animate-pulse">
+                        <div class="bg-gray-300 h-32 rounded-lg mb-2"></div>
+                        <div class="h-4 bg-gray-300 rounded w-3/4 mb-1"></div>
+                        <div class="h-3 bg-gray-300 rounded w-1/2"></div>
+                    </div>
+                </div>
+            </div>
+            <!-- Recent captures grid will be loaded here -->
+            <div class="htmx-settling">Loading recent captures...</div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Container -->
+<div id="modal-container"></div>
+
+<!-- Chart.js Initialization -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Dashboard initialized');
+    
+    // Initialize charts when the page loads
+    initializeCharts();
+    
+    // Re-initialize charts when HTMX settles (after updates)
+    document.addEventListener('htmx:afterSettle', function(evt) {
+        if (evt.target.id === 'dashboard-container') {
+            initializeCharts();
+        }
+    });
+});
+
+function initializeCharts() {
+    // Weekly Trends Chart
+    const trendsCtx = document.getElementById('weeklyTrendsChart');
+    if (trendsCtx && !trendsCtx.chart) {
+        trendsCtx.chart = new Chart(trendsCtx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Content Captured',
+                    data: [],
+                    borderColor: 'rgb(59, 130, 246)',
+                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        }
+                    }
+                },
+                interaction: {
+                    intersect: false,
+                    mode: 'index'
+                }
+            }
+        });
+        
+        // Load chart data
+        loadWeeklyTrends();
+    }
+
+    // Category Distribution Chart
+    const categoryCtx = document.getElementById('categoryDistributionChart');
+    if (categoryCtx && !categoryCtx.chart) {
+        categoryCtx.chart = new Chart(categoryCtx, {
+            type: 'doughnut',
+            data: {
+                labels: [],
+                datasets: [{
+                    data: [],
+                    backgroundColor: [
+                        'rgb(59, 130, 246)',   // Blue
+                        'rgb(16, 185, 129)',   // Green
+                        'rgb(245, 158, 11)',   // Yellow
+                        'rgb(139, 92, 246)',   // Purple
+                        'rgb(239, 68, 68)',    // Red
+                        'rgb(107, 114, 128)',  // Gray
+                        'rgb(236, 72, 153)',   // Pink
+                        'rgb(20, 184, 166)',   // Teal
+                        'rgb(251, 146, 60)'    // Orange
+                    ],
+                    borderWidth: 2,
+                    borderColor: '#ffffff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            usePointStyle: true,
+                            padding: 15
+                        }
+                    }
+                },
+                cutout: '60%'
+            }
+        });
+        
+        // Load chart data
+        loadCategoryDistribution();
+    }
+}
+
+function loadWeeklyTrends() {
+    fetch('/api/metrics/weekly-trends')
+        .then(response => response.json())
+        .then(data => {
+            const chart = document.getElementById('weeklyTrendsChart').chart;
+            if (chart && data.success) {
+                chart.data.labels = data.data.labels;
+                chart.data.datasets[0].data = data.data.values;
+                chart.update('active');
+            }
+        })
+        .catch(error => console.error('Failed to load weekly trends:', error));
+}
+
+function loadCategoryDistribution() {
+    fetch('/api/metrics/category-distribution')
+        .then(response => response.json())
+        .then(data => {
+            const chart = document.getElementById('categoryDistributionChart').chart;
+            if (chart && data.success) {
+                chart.data.labels = data.data.labels;
+                chart.data.datasets[0].data = data.data.values;
+                chart.update('active');
+            }
+        })
+        .catch(error => console.error('Failed to load category distribution:', error));
+}
+
+// Auto-refresh charts every 5 minutes
+setInterval(() => {
+    loadWeeklyTrends();
+    loadCategoryDistribution();
+}, 5 * 60 * 1000);
+</script>

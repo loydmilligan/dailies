@@ -5,6 +5,9 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
+const path = require('path');
+const expressLayouts = require('express-ejs-layouts');
+const { sessionConfig } = require('./config/session');
 const db = require('./database');
 const ContentSanitizer = require('./services/contentSanitizer');
 const aiClassificationService = require('./services/aiClassification');
@@ -42,6 +45,8 @@ const {
 const authRoutes = require('./routes/auth');
 const politicalRoutes = require('./routes/political');
 const generalRoutes = require('./routes/general');
+const metricsRoutes = require('./routes/metrics');
+const activityRoutes = require('./routes/activity');
 const { setupSwagger } = require('./config/swagger');
 const {
   requirePermission,
@@ -55,10 +60,28 @@ const {
   requestValidation,
   securityMonitoring
 } = require('./middleware/security');
+const {
+  addCSRFToken,
+  verifyCSRF,
+  securityHeaders,
+  sanitizeInput,
+  securityMonitoring: csrfSecurityMonitoring
+} = require('./middleware/csrfProtection');
 require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// Configure EJS as the view engine
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, '../views'));
+
+// Configure express-ejs-layouts
+app.use(expressLayouts);
+app.set('layout', 'layouts/main');
+
+// Serve static files from public directory
+app.use(express.static(path.join(__dirname, '../public')));
 
 // Database service is already initialized as singleton
 
@@ -84,8 +107,11 @@ app.use(validateRequestSize);
 // Enhanced security middleware
 app.use(getEnhancedHelmetConfig());
 app.use(additionalSecurityHeaders());
+app.use(securityHeaders);
 app.use(requestValidation());
 app.use(securityMonitoring());
+app.use(csrfSecurityMonitoring);
+app.use(sanitizeInput);
 
 // CORS configuration for extension and frontend
 app.use(cors({
@@ -105,6 +131,10 @@ app.use('/api/admin/', rateLimitConfigs.admin);
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
+// Session middleware
+const session = require('express-session');
+app.use(session(sessionConfig));
+
 // String sanitization
 app.use(sanitizeStrings);
 
@@ -120,8 +150,77 @@ app.use('/api/political', politicalRoutes);
 // General content processing routes
 app.use('/api/general', generalRoutes);
 
+// Metrics routes for dashboard
+app.use('/api/metrics', metricsRoutes);
+
+// Activity routes for dashboard
+app.use('/api/activity', activityRoutes);
+
 // Setup Swagger documentation
 setupSwagger(app);
+
+// Import JWT auth middleware
+const { authenticateJWT, optionalJWT } = require('./middleware/jwtAuth');
+
+// Web UI Routes - Protected with JWT and CSRF
+app.get('/dashboard', addCSRFToken, optionalJWT, (req, res) => {
+  res.render('pages/dashboard', {
+    title: 'Dashboard',
+    currentPage: 'dashboard',
+    user: req.user,
+    csrfToken: res.locals.csrfToken
+  });
+});
+
+app.get('/content', addCSRFToken, authenticateJWT, requireRole(['admin', 'editor', 'user']), (req, res) => {
+  res.render('pages/content-management', {
+    title: 'Content Management',
+    currentPage: 'content',
+    user: req.user,
+    csrfToken: res.locals.csrfToken
+  });
+});
+
+app.get('/analytics', addCSRFToken, authenticateJWT, requireRole(['admin', 'editor']), (req, res) => {
+  res.render('pages/analytics', {
+    title: 'Analytics',
+    currentPage: 'analytics',
+    user: req.user,
+    csrfToken: res.locals.csrfToken
+  });
+});
+
+app.get('/digests', addCSRFToken, authenticateJWT, requireRole(['admin', 'editor']), (req, res) => {
+  res.render('pages/digest-management', {
+    title: 'Digest Management',
+    currentPage: 'digests',
+    user: req.user,
+    csrfToken: res.locals.csrfToken
+  });
+});
+
+app.get('/configuration', addCSRFToken, authenticateJWT, requireRole(['admin']), (req, res) => {
+  res.render('pages/configuration', {
+    title: 'Configuration',
+    currentPage: 'configuration',
+    user: req.user,
+    csrfToken: res.locals.csrfToken
+  });
+});
+
+// Login page (public) - with CSRF protection
+app.get('/login', addCSRFToken, (req, res) => {
+  res.render('pages/login', {
+    title: 'Login',
+    currentPage: 'login',
+    csrfToken: res.locals.csrfToken
+  });
+});
+
+// Redirect root to dashboard
+app.get('/', (req, res) => {
+  res.redirect('/dashboard');
+});
 
 /**
  * @swagger
@@ -941,6 +1040,136 @@ app.get('/api/content/:id', requirePermission('content:read'), validateContentId
 
 /**
  * @swagger
+ * /api/content/recent:
+ *   get:
+ *     summary: Get recent content for dashboard
+ *     description: Returns recent content items formatted for dashboard display
+ *     tags: [Content]
+ *     security: []
+ *     parameters:
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 6
+ *         description: Number of items to return
+ *     responses:
+ *       200:
+ *         description: Recent content HTML fragment
+ */
+app.get('/api/content/recent', optionalJWT, asyncHandler(async (req, res) => {
+  try {
+    const limit = Math.min(parseInt(req.query.limit) || 6, 20);
+    
+    const recentContent = await db.query(`
+      SELECT 
+        ci.id,
+        ci.title,
+        ci.url,
+        ci.source_domain,
+        ci.created_at,
+        ci.processing_status,
+        ci.ai_confidence_score,
+        c.name as category
+      FROM content_items ci
+      LEFT JOIN categories c ON ci.category_id = c.id
+      ORDER BY ci.created_at DESC
+      LIMIT $1
+    `, [limit]);
+    
+    let contentHtml = '';
+    
+    if (recentContent.rows.length === 0) {
+      contentHtml = `
+        <div class="text-center py-8 text-gray-500">
+          <svg class="w-12 h-12 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+          </svg>
+          <p>No content captured yet</p>
+        </div>
+      `;
+    } else {
+      contentHtml = '<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">';
+      
+      recentContent.rows.forEach(item => {
+        const timeAgo = getTimeAgo(new Date(item.created_at));
+        const statusColor = getStatusColor(item.processing_status);
+        const confidenceScore = item.ai_confidence_score ? Math.round(item.ai_confidence_score * 100) : null;
+        
+        contentHtml += `
+          <div class="bg-gray-50 rounded-lg p-4 hover:bg-gray-100 transition-colors cursor-pointer" onclick="window.open('${item.url}', '_blank')">
+            <div class="flex items-start justify-between mb-2">
+              <div class="flex-1 min-w-0">
+                <h4 class="text-sm font-medium text-gray-900 truncate">${item.title}</h4>
+                <p class="text-xs text-gray-500 truncate">${item.source_domain}</p>
+              </div>
+              <div class="w-2 h-2 ${statusColor} rounded-full ml-2 mt-1 flex-shrink-0"></div>
+            </div>
+            
+            <div class="flex items-center justify-between text-xs text-gray-500">
+              <span class="truncate">${item.category || 'Uncategorized'}</span>
+              <span>${timeAgo}</span>
+            </div>
+            
+            ${confidenceScore ? `
+              <div class="mt-2">
+                <div class="flex items-center justify-between text-xs">
+                  <span class="text-gray-500">AI Confidence</span>
+                  <span class="text-gray-600">${confidenceScore}%</span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-1 mt-1">
+                  <div class="bg-blue-500 h-1 rounded-full" style="width: ${confidenceScore}%"></div>
+                </div>
+              </div>
+            ` : ''}
+          </div>
+        `;
+      });
+      
+      contentHtml += '</div>';
+    }
+    
+    res.type('text/html');
+    res.send(contentHtml);
+    
+  } catch (error) {
+    console.error('Error fetching recent content:', error);
+    res.type('text/html');
+    res.send(`
+      <div class="text-center py-4 text-red-500">
+        <p>Error loading content</p>
+      </div>
+    `);
+  }
+  
+  // Helper functions (same as activity.js)
+  function getTimeAgo(date) {
+    const now = new Date();
+    const diff = now - date;
+    const minutes = Math.floor(diff / 60000);
+    const hours = Math.floor(diff / 3600000);
+    const days = Math.floor(diff / 86400000);
+    
+    if (minutes < 1) return 'Just now';
+    if (minutes < 60) return `${minutes}m ago`;
+    if (hours < 24) return `${hours}h ago`;
+    return `${days}d ago`;
+  }
+  
+  function getStatusColor(status) {
+    switch (status) {
+      case 'completed': return 'bg-green-400';
+      case 'processing': return 'bg-blue-400';
+      case 'needs_review': return 'bg-yellow-400';
+      case 'failed': 
+      case 'error': return 'bg-red-400';
+      default: return 'bg-gray-400';
+    }
+  }
+}));
+
+/**
+ * @swagger
  * /api/content/{id}:
  *   put:
  *     summary: Update content item
@@ -1268,6 +1497,23 @@ process.on('SIGINT', async () => {
 // Initialize secure services and start server
 async function startServer() {
   try {
+    const isDemoMode = process.env.DEMO_MODE === 'true';
+    
+    if (isDemoMode) {
+      console.log('🚀 Starting in DEMO MODE - skipping database initialization...');
+      
+      // Start the server immediately without database dependencies
+      app.listen(PORT, () => {
+        console.log(`🎭 DEMO MODE: Database services disabled`);
+        console.log(`📚 API Documentation available at /api/docs`);
+        console.log(`📄 OpenAPI spec available at /api/docs.json`);
+        console.log(`Dailies API server running on port ${PORT} (DEMO MODE)`);
+        console.log(`Health check: http://localhost:${PORT}/api/health`);
+        console.log(`Dashboard: http://localhost:${PORT}/dashboard`);
+      });
+      return;
+    }
+    
     // Initialize secure configuration service
     await secureConfigService.initialize();
     
