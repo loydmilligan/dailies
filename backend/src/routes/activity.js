@@ -99,10 +99,10 @@ router.get('/recent', optionalJWT, asyncHandler(async (req, res) => {
           ci.url,
           ci.created_at,
           c.name as category,
-          ci.processing_status,
+          ci.processing_status::text as processing_status,
           ci.ai_confidence_score
         FROM content_items ci
-        LEFT JOIN categories c ON ci.category_id = c.id
+        LEFT JOIN categories c ON ci.primary_category_id = c.id
         WHERE ci.created_at >= CURRENT_TIMESTAMP - INTERVAL '24 hours'
         ORDER BY ci.created_at DESC
         LIMIT $1
@@ -115,7 +115,7 @@ router.get('/recent', optionalJWT, asyncHandler(async (req, res) => {
           '' as url,
           pl.created_at,
           pl.status as category,
-          pl.status as processing_status,
+          pl.status::text as processing_status,
           NULL as ai_confidence_score
         FROM processing_logs pl
         WHERE pl.created_at >= CURRENT_TIMESTAMP - INTERVAL '24 hours'

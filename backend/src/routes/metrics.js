@@ -61,13 +61,13 @@ router.get('/today/captures', optionalJWT, asyncHandler(async (req, res) => {
     
     // Query today's captures
     const todayCount = await db.query(
-      'SELECT COUNT(*) as count FROM content_items WHERE created_at >= $1 AND created_at < $2',
+      'SELECT COUNT(*) as count FROM content_items WHERE created_at >= $1::timestamptz AND created_at < $2::timestamptz',
       [today.toISOString(), tomorrow.toISOString()]
     );
     
     // Query yesterday's captures for comparison
     const yesterdayCount = await db.query(
-      'SELECT COUNT(*) as count FROM content_items WHERE created_at >= $1 AND created_at < $2',
+      'SELECT COUNT(*) as count FROM content_items WHERE created_at >= $1::timestamptz AND created_at < $2::timestamptz',
       [yesterday.toISOString(), today.toISOString()]
     );
     
@@ -146,7 +146,7 @@ router.get('/success-rate', optionalJWT, asyncHandler(async (req, res) => {
         COUNT(CASE WHEN processing_status = 'completed' THEN 1 END) as completed,
         COUNT(CASE WHEN processing_status = 'failed' OR processing_status = 'error' THEN 1 END) as failed
       FROM content_items 
-      WHERE created_at >= $1
+      WHERE created_at >= $1::timestamptz
     `, [yesterday.toISOString()]);
     
     const total = parseInt(stats.rows[0]?.total || 0);
@@ -272,7 +272,7 @@ router.get('/ai-confidence', optionalJWT, asyncHandler(async (req, res) => {
     const avgConfidence = await db.query(`
       SELECT AVG(ai_confidence_score) as avg_confidence
       FROM content_items 
-      WHERE created_at >= $1 
+      WHERE created_at >= $1::timestamptz 
         AND ai_confidence_score IS NOT NULL
     `, [weekAgo.toISOString()]);
     
