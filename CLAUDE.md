@@ -4,6 +4,98 @@
 
 ### Core Workflow Commands
 
+## MCP TOOL
+
+#### docker-mcp
+
+### Available Tools
+
+The following tools are available for interacting with the Docker environment.
+
+#### create-container
+
+This function creates and starts a new, standalone Docker container based on a specified image and configuration.
+
+**Parameters:**
+
+| Name | Type | Description | Required |
+| :---- | :---- | :---- | :---- |
+| image | string | The name of the Docker image to use for the container (e.g., "ubuntu:latest"). | Yes |
+| name | string | The desired name for the new container. | Yes |
+| ports | object | An object mapping host ports to container ports. The key is the host port and the value is the container port. | No |
+| environment | object | An object defining environment variables to set within the container. | No |
+
+**Example JSON:**
+
+{  
+    "image": "image-name",  
+    "name": "container-name",  
+    "ports": {"80": "80"},  
+    "environment": {"ENV\_VAR": "value"}  
+}
+
+#### deploy-compose
+
+This function deploys a multi-container application using a Docker Compose YAML configuration.
+
+**Parameters:**
+
+| Name | Type | Description | Required |
+| :---- | :---- | :---- | :---- |
+| project\_name | string | A unique name for the Docker Compose project or stack. | Yes |
+| compose\_yaml | string | A string containing the full docker-compose.yml file content. | Yes |
+
+**Example JSON:**
+
+{  
+    "project\_name": "example-stack",  
+    "compose\_yaml": "version: '3.8'\\nservices:\\n  service1:\\n    image: image1:latest\\n    ports:\\n      \- '8080:80'"  
+}
+
+#### get-logs
+
+This function retrieves the log output from a specific, existing container.
+
+**Parameters:**
+
+| Name | Type | Description | Required |
+| :---- | :---- | :---- | :---- |
+| container\_name | string | The name of the container to retrieve logs from. | Yes |
+
+**Example JSON:**
+
+{  
+    "container\_name": "my-container"  
+}
+
+#### list-containers
+
+This function lists all Docker containers currently on the host system, regardless of their state (running, stopped, etc.). It accepts no parameters.
+
+**Example JSON:**
+
+{}  
+
+## context7
+## memory
+## taskmaster-ai
+
+
+## User Preferences
+
+*   **Planning & Deliberation:** Always take your time to think through problems carefully. Be deliberate about what yo>
+*   **Information Gathering:** Ask for more information instead of making large assumptions. If you're uncertain about >
+*   **Review & Validation:** After completing any task or making changes, always review your work to ensure the plan ac>
+*   **Critical Thinking:** Think hard about each step in your process:
+    1. **Understanding**: What exactly is being asked?
+    2. **Planning**: What's the best approach to solve this?
+    3. **Implementation**: How can this be done correctly and efficiently?
+    4. **Verification**: Does the solution work and meet the requirements?
+
+*   **Correction & Feedback:** Always correct me if I am wrong about technical details, project structure, or implement>
+*   **Task Management:** Use the TodoWrite and TodoRead tools frequently to track progress on complex tasks. Break down>
+*   **Code Quality:** Maintain high code quality standards. Follow existing patterns in the codebase, write clear and m>
+
 ```bash
 # Project Setup
 task-master init                                    # Initialize Task Master in current project

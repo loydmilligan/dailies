@@ -1,0 +1,23 @@
+{
+  "theme": "GitHub",
+  "sandbox": "false",
+  "toolDiscoveryCommand": "bin/get_tools",
+  "toolCallCommand": "bin/call_tool",
+  "mcpServers": {
+    "mainServer": {
+      "command": "bin/mcp_server.py"
+    },
+    "anotherServer": {
+      "command": "node",
+      "args": ["mcp_server.js", "--verbose"]
+    }
+  },
+  "telemetry": {
+    "enabled": true,
+    "target": "local",
+    "otlpEndpoint": "http://localhost:4317",
+    "logPrompts": true
+  },
+  "usageStatisticsEnabled": true
+}
+
