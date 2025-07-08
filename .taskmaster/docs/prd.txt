@@ -1,87 +1,206 @@
-Product Requirements Document - Dailies Content Curation System
+# Product Requirements Document - Dailies Web Interface
 
-EXECUTIVE SUMMARY
-Dailies is a personal content curation and knowledge management system designed to solve the problem of information overload and poor retention of digital content. The system focuses on capturing, processing, and synthesizing web content—particularly US politics and news—into digestible daily summaries that enhance learning and retention.
+## Executive Summary
 
-PROBLEM STATEMENT
-Current Pain Points:
-1. Information Overload: Consuming 25-50 pieces of content daily without proper retention
-2. Passive Consumption: Reading/watching content immediately or bookmarking for later, but rarely revisiting
-3. Lost Knowledge: Valuable insights and information are quickly forgotten
-4. Fragmented Sources: Content comes from diverse platforms (YouTube, news sites, social media)
-5. No Synthesis: Individual pieces of content are consumed in isolation without connecting themes
+Following the successful modular content classification refactor, this PRD outlines the development of a comprehensive web interface for the Dailies content curation system. The system has evolved from binary classification (Political vs General) to a sophisticated 9-category modular system, requiring a unified web interface built with HTMX + Express.js.
 
-Target User: Tech-savvy knowledge workers and political enthusiasts who consume 25-50 digital content pieces daily and struggle with information retention.
+## Project Overview
 
-SOLUTION OVERVIEW
-A comprehensive system that:
-1. Captures content seamlessly through browser extension
-2. Processes content with AI to extract insights and metadata
-3. Categorizes content with special handling for US politics/news
-4. Synthesizes daily digests with topic clustering and importance ranking
-5. Delivers content through email and TTS for enhanced retention
+**Current State**: Backend modular classification system with 9 content categories is complete
+**Goal**: Build unified web interface for content management, system monitoring, and configuration
+**Technology Stack**: Express.js + EJS templates + HTMX + Tailwind CSS + Chart.js
+**Architecture**: Server-side rendered with HTMX for dynamic interactions
 
-CORE FEATURES
+## Epic 1: Dashboard Page Foundation
+**Primary Focus**: System overview and monitoring interface
 
-1. Content Capture
-- Browser extension (Chrome/Firefox) for one-click bookmarking
-- Captures entire web pages and full YouTube videos including transcripts
-- Automatic metadata extraction (title, URL, timestamp, source domain)
-- Visual confirmation and no browsing interruption
+### User Stories:
+- As a user, I want to see recent content captures organized by category so I can quickly understand what content has been processed
+- As a user, I want to view real-time processing statistics (captures per day/week, success rates) so I can monitor system health  
+- As a user, I want to see AI provider usage and costs (Gemini/OpenAI/Anthropic) so I can track expenses
+- As a user, I want to view category distribution charts so I can understand content patterns
+- As a user, I want to see processing pipeline status for recent content so I can identify any issues
+- As a user, I want quick access to failed classifications for manual review
+- As a user, I want to see top domains by capture volume to understand content sources
 
-2. Content Classification
-- AI-powered classification of "US Politics/News" vs "General" content
-- 90%+ accuracy with confidence scoring
-- Manual override capability for incorrect classifications
-- Fallback to manual tagging when AI fails
+### Technical Requirements:
+- Server-side rendered EJS templates with Express.js routing
+- Chart.js integration for data visualizations 
+- HTMX for real-time data updates without full page reloads
+- Responsive design using Tailwind CSS (CDN)
+- PostgreSQL queries for dashboard metrics
 
-3. Enhanced Political Content Processing
-- Political bias detection (left/center/right leaning)
-- Content quality scoring (1-10 scale) based on multiple factors
-- Loaded language identification and source credibility assessment
-- Comprehensive summaries with executive summary, detailed summary, and key points
-- Implications analysis for forward-looking insights
+## Epic 2: Content Management Interface
+**Primary Focus**: Content discovery, filtering, and bulk operations
 
-4. Basic General Content Storage
-- Simple JSON structure for non-political content
-- Minimal processing to reduce system load
-- Basic metadata preservation for search capability
+### User Stories:
+- As a user, I want to search content across all 9 categories using full-text search so I can find specific articles
+- As a user, I want to filter content by category, date range, source domain, and quality score so I can narrow down results
+- As a user, I want to see content in a paginated list with key metadata (title, category, date, source) for easy browsing
+- As a user, I want to select multiple content items for bulk operations (delete, reprocess, change category) to manage content efficiently
+- As a user, I want to sort content by date, quality score, or category for different viewing preferences
+- As a user, I want to see classification confidence scores and AI provider used for transparency
+- As a user, I want to export selected content to CSV/JSON for external analysis
+- As a user, I want to see content processing status (successful, failed, in-progress) with error details
+- As a user, I want to save custom filter combinations as presets for repeated use
+- As a user, I want to see related content suggestions based on similarity
+- As a user, I want to flag content for manual review or follow-up
 
-5. Daily Digest Generation
-- Content grouped by semantic similarity into topic clusters
-- Topics ranked by importance score (quality × freshness × engagement)
-- Maximum 3-5 topic clusters per digest with diversity filtering
-- Markdown format for clean, readable presentation
+### Technical Requirements:
+- PostgreSQL full-text search integration
+- HTMX-powered filtering and pagination without page reloads
+- Bulk operation confirmation dialogs
+- Progress indicators for long-running operations
+- CSV/JSON export functionality
 
-6. Multi-Format Delivery
-- Email delivery at user-configured time with mobile-responsive design
-- TTS audio generation with natural voice synthesis and chapter markers
-- Archive links to web versions for historical access
+## Epic 3: Content Detail Modal
+**Primary Focus**: Individual content examination and editing
 
-7. System Management
-- Web interface dashboard with recent captures and statistics
-- Search, filter, and bulk operations functionality
-- Manual content editing and tag management
-- Configuration settings for digest preferences and AI models
+### User Stories:
+- As a user, I want to view full content details including raw text, summary, and extracted metadata
+- As a user, I want to see all AI processing results (bias analysis, quality scores, extracted entities) in an organized layout
+- As a user, I want to manually override AI classification if the category is incorrect
+- As a user, I want to edit content metadata (title, summary, key points) to improve accuracy
+- As a user, I want to see the classification reasoning and confidence score to understand AI decisions
+- As a user, I want to view action execution results for each category-specific processor
+- As a user, I want to reprocess content with different AI providers or settings
+- As a user, I want to add manual notes or annotations to content items
+- For political content, I want to see bias analysis, quality scores, and loaded language detection
+- For tech content, I want to see extracted technologies, tools, and trend analysis
+- For 3D printing content, I want to see print settings, model classification, and file information
+- For sports content, I want to see extracted statistics, teams, and players
 
-TECHNICAL REQUIREMENTS
+### Technical Requirements:
+- Modal/overlay implementation using HTMX
+- Form handling for content editing with validation
+- Real-time feedback and error handling
+- Category-specific result display components
 
-Database: PostgreSQL with content_items, political_analysis, and daily_digests tables
-AI Integration: Gemini API (primary) with OpenAI/Anthropic fallback
-Infrastructure: Self-hosted on home server with encrypted storage
-Browser Support: Chrome and Firefox extensions with Manifest V3
-Performance: <5s capture, <30s AI processing, <5min digest generation
-Scalability: 100+ captures/day, 2+ years retention, 5+ concurrent processing
+## Epic 4: Configuration Management
+**Primary Focus**: System settings and AI provider management
 
-SUCCESS METRICS
-- Daily content capture rate: 25-50 items
-- Digest open rate: 90%+
-- Content classification accuracy: 90%+
-- System uptime: 99.5%+
-- User satisfaction with digest quality and knowledge retention
+### User Stories:
+- As a user, I want to configure AI provider settings (API keys, model selection, fallback order) for classification control
+- As a user, I want to manage content categories (add, edit, disable) to customize the classification system
+- As a user, I want to configure category aliases for better classification accuracy
+- As a user, I want to manage domain matchers to provide classification hints
+- As a user, I want to set email delivery preferences (SMTP settings, templates) for digest distribution
+- As a user, I want to configure action execution settings for each category
+- As a user, I want to set system performance parameters (timeouts, retry limits)
+- As a user, I want to manage user accounts and permissions for multi-user scenarios
+- As a user, I want to test AI provider connectivity and view response times
+- As a user, I want to see cost tracking per provider and set budget alerts
+- As a user, I want to configure model-specific parameters for each provider
+- As a user, I want to create new content categories with custom actions
+- As a user, I want to reorder category priorities for classification preference
+- As a user, I want to see category statistics and adjust settings accordingly
 
-FUTURE ENHANCEMENTS
-Phase 2: Flashcard generation and spaced repetition system
-Phase 3: Browsing assistant with AI recommendations
-Phase 4: Obsidian integration and plugin system
-Phase 5: Multi-category support and advanced bias detection
+### Technical Requirements:
+- Secure form handling for sensitive data like API keys
+- Real-time configuration validation
+- Configuration backup/restore functionality
+- Audit logging for configuration changes
+
+## Epic 5: Analytics Dashboard
+**Primary Focus**: System insights and performance monitoring
+
+### User Stories:
+- As a user, I want to view content trends by category over time to understand information patterns
+- As a user, I want to monitor AI classification accuracy and confidence scores for system optimization
+- As a user, I want to track processing costs and usage patterns across AI providers
+- As a user, I want to see system performance metrics (processing time, error rates) for health monitoring
+- As a user, I want to analyze content source patterns and domain reliability
+- As a user, I want to export analytics data for external reporting
+- As a user, I want to see correlation analysis between content characteristics and engagement
+- As a user, I want to identify content quality trends and outliers
+- As a user, I want to monitor digest performance and reader engagement
+- As a user, I want to set up automated alerts for system anomalies
+
+### Technical Requirements:
+- Interactive Chart.js visualizations
+- Data export functionality (CSV, JSON)
+- Real-time metric updates using HTMX
+- Configurable dashboard widgets
+
+## Epic 6: Digest Management
+**Primary Focus**: Daily digest creation and scheduling
+
+### User Stories:
+- As a user, I want to view past digests in a calendar layout so I can see digest history
+- As a user, I want to manually trigger digest generation for any date range
+- As a user, I want to preview digest content before sending to review formatting and content selection
+- As a user, I want to edit digest sections (add/remove content, modify summaries) for customization
+- As a user, I want to see digest generation status and any errors that occurred
+- As a user, I want to configure digest frequency and delivery schedule
+- As a user, I want to see digest analytics (open rates, click rates) if email delivery is enabled
+- As a user, I want to regenerate digests with different content selection criteria
+- As a user, I want to create themed digests (e.g., tech-only, politics-only) for targeted audiences
+- As a user, I want to set content quality thresholds for digest inclusion
+- As a user, I want to exclude specific sources or categories from digests
+
+### Technical Requirements:
+- Calendar widget integration
+- Markdown preview and editing capabilities
+- Drag-and-drop content organization
+- Email preview functionality
+
+## Technical Architecture
+
+### Backend Integration:
+- Build on existing Express.js server structure
+- Utilize existing PostgreSQL database with modular classification tables
+- Integrate with existing Redis caching layer
+- Connect to existing job processing system
+
+### Frontend Technology:
+- EJS templates for server-side rendering
+- HTMX for dynamic interactions without JavaScript frameworks
+- Tailwind CSS via CDN for styling (no build process)
+- Chart.js for data visualizations
+- Minimal custom JavaScript only where necessary
+
+### Development Approach:
+- Page-by-page incremental development
+- Manual testing after each feature
+- Git commits for each working increment
+- Focus on working software over comprehensive documentation
+
+## Implementation Phases
+
+### Phase 1: Dashboard Foundation
+Build core dashboard with navigation and basic monitoring
+
+### Phase 2: Content Management
+Implement content browsing, search, and bulk operations
+
+### Phase 3: Content Detail Modal
+Add individual content viewing and editing capabilities
+
+### Phase 4: Configuration Interface
+Build system configuration and AI provider management
+
+### Phase 5: Analytics Dashboard
+Implement reporting and performance monitoring
+
+### Phase 6: Digest Management
+Add digest creation and scheduling functionality
+
+## Success Criteria
+
+- Unified web interface replaces need for direct database access
+- All 9 content categories properly represented in UI
+- HTMX provides smooth user experience without page reloads
+- Configuration changes can be made through web interface
+- System monitoring and analytics available through dashboard
+- Content management operations (search, filter, edit) work efficiently
+- Integration with existing backend systems maintains data integrity
+
+## Future Considerations
+
+- Mobile-responsive design for tablet/phone access
+- API endpoints for potential future integrations
+- User role management for multi-user scenarios
+- Advanced analytics and reporting features
+- Integration with external tools (Obsidian, note-taking apps)
+
+This PRD serves as the foundation for TaskMaster task generation and represents the comprehensive web interface needed to complete the Dailies content curation system.

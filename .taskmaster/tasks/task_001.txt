@@ -1,0 +1,11 @@
+# Task ID: 1
+# Title: Setup Project Repository
+# Status: done
+# Dependencies: None
+# Priority: medium
+# Description: Create a new project repository on Git and initialize it with a basic directory structure for the Dailies web interface.
+# Details:
+
+
+# Test Strategy:
+

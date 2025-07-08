@@ -1,0 +1,11 @@
+# Task ID: 3
+# Title: Implement Dashboard Foundation
+# Status: pending
+# Dependencies: None
+# Priority: medium
+# Description: Develop the core dashboard with navigation and basic monitoring features using EJS templates and HTMX.
+# Details:
+
+
+# Test Strategy:
+

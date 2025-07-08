@@ -1,0 +1,49 @@
+# Task ID: 5
+# Title: Develop Content Management Interface
+# Status: pending
+# Dependencies: None
+# Priority: medium
+# Description: Implement content search, filtering, and bulk operations using PostgreSQL full-text search and HTMX.
+# Details:
+
+
+# Test Strategy:
+
+
+# Subtasks:
+## 1. Set up PostgreSQL Full-Text Search Index [pending]
+### Dependencies: None
+### Description: Create a full-text search index on the content table in PostgreSQL. This will enable efficient text-based searching.
+### Details:
+Use the `CREATE INDEX` statement with the `USING GIN` clause and the `to_tsvector` function to create the index. Choose appropriate columns for indexing (e.g., title, body). Consider using a specific text search configuration (e.g., 'english') for better results. Example: `CREATE INDEX content_fts_idx ON content USING GIN (to_tsvector('english', title || ' ' || body));`
+
+## 2. Implement Content Search Endpoint [pending]
+### Dependencies: None
+### Description: Create an API endpoint that accepts a search query and returns a list of content items matching the query using PostgreSQL full-text search.
+### Details:
+Create a route (e.g., `/search`) that accepts a `q` parameter for the search query. Use a parameterized query to prevent SQL injection. Use `plainto_tsquery` to sanitize the user input and convert it into a query suitable for full-text search. Order the results by relevance using `ts_rank`. Return the results as JSON.
+
+## 3. Implement Content Filtering [pending]
+### Dependencies: None
+### Description: Add filtering capabilities to the content list, allowing users to filter by category, status, or other relevant criteria.
+### Details:
+Extend the search endpoint to accept additional filter parameters (e.g., `category`, `status`). Add these filters to the SQL query using `WHERE` clauses. Ensure that the filters are applied correctly in conjunction with the full-text search query. Use parameterized queries to prevent SQL injection.
+
+## 4. Develop HTMX-Based Search and Filter UI [pending]
+### Dependencies: None
+### Description: Create an HTMX-based user interface for searching and filtering content. The UI should dynamically update the content list as the user types or selects filters.
+### Details:
+Create HTML elements for the search input and filter controls. Use HTMX attributes like `hx-get`, `hx-trigger`, and `hx-target` to trigger requests to the search endpoint when the user types in the search input or changes the filter selections. Update the content list with the results returned by the endpoint. Implement debouncing for the search input to avoid sending too many requests.
+
+## 5. Implement Bulk Operations (Delete) [pending]
+### Dependencies: None
+### Description: Implement bulk delete functionality, allowing users to select multiple content items and delete them at once.
+### Details:
+Add checkboxes to each content item in the list. Add a button to trigger the bulk delete operation. When the button is clicked, collect the IDs of the selected content items and send them to a new endpoint (e.g., `/bulk-delete`). In the endpoint, use a parameterized query with `WHERE id IN (...)` to delete the selected content items. Use HTMX to update the content list after the deletion.
+
+## 6. Implement Bulk Operations (Update Status) [pending]
+### Dependencies: None
+### Description: Implement bulk update status functionality, allowing users to select multiple content items and update their status at once.
+### Details:
+Add checkboxes to each content item in the list. Add a dropdown to select the new status. Add a button to trigger the bulk update operation. When the button is clicked, collect the IDs of the selected content items and the new status and send them to a new endpoint (e.g., `/bulk-update-status`). In the endpoint, use a parameterized query with `UPDATE content SET status = $1 WHERE id IN (...)` to update the selected content items. Use HTMX to update the content list after the update.
+

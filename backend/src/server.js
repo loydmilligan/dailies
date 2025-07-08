@@ -66,12 +66,14 @@ const PORT = process.env.PORT || 3000;
 const enhancedClassifier = new EnhancedAIClassificationService();
 const categoryService = new CategoryService(db);
 const actionService = new ActionService(db);
+const redisService = require('./services/redisService');
 
 // Make services available to routes and middleware
 app.locals.db = db;
 app.locals.enhancedClassifier = enhancedClassifier;
 app.locals.categoryService = categoryService;
 app.locals.actionService = actionService;
+app.locals.redisService = redisService;
 
 // Setup global error handlers
 handleUnhandledRejection();
@@ -110,6 +112,14 @@ app.use(sanitizeStrings);
 
 // Logging
 app.use(requestLogger);
+
+// Setup EJS templating and web interface
+const { setupWebInterface } = require('./config/webInterface');
+setupWebInterface(app);
+
+// Web interface routes (before API routes)
+const webRoutes = require('./routes/web');
+app.use('/', webRoutes);
 
 // Authentication routes
 app.use('/api/auth', authRoutes);
